@@ -76,3 +76,15 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+# compiled output
+/dist-server
+
+# dependencies
+package-lock.json
+
+# e2e
+/e2e/*.js
+/e2e/*.map
