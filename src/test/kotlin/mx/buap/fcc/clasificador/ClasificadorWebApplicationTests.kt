@@ -1,4 +1,4 @@
-package mx.buap.fcc.clasificadorweb
+package mx.buap.fcc.clasificador
 
 import org.junit.Test
 import org.junit.runner.RunWith

@@ -1,4 +1,4 @@
-package mx.buap.fcc.clasificadorweb
+package mx.buap.fcc.clasificador
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
