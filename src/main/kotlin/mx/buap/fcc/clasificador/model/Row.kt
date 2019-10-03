@@ -8,15 +8,15 @@ import java.math.BigDecimal.*
  * @author Carlos Montoya
  */
 class Row constructor(
-		private val indice: Int = 0,
-		private val attributes: Array<BigDecimal>,
+		val indice: Int = 0,
+		val values: Array<BigDecimal>,
 		var dataSet: DataSet? = null)
 {
-	fun size() = attributes.size
+	fun size() = values.size
 
-	operator fun get(i: Int) = attributes[i]
+	operator fun get(i: Int) = values[i]
 
-	operator fun set(i: Int, att: BigDecimal) { attributes[i] = att }
+	operator fun set(i: Int, att: BigDecimal) { values[i] = att }
 
 	/**
 	 * Normaliza este DataRow mediante el metodo min-max, a partir de los parametros especificados.
@@ -26,10 +26,10 @@ class Row constructor(
 			   newMin: BigDecimal, newMax: BigDecimal)
 	{
 		val diffNewMinNewMax = newMax - newMin
-		for (i in attributes.indices) {
+		for (i in values.indices) {
 			val diffMinMax = maxRow[i] - minRow[i]
 			if (dataSet!!.isNumerico(i))
-				attributes[i] = (((attributes[i] - minRow[i]) / diffMinMax) * diffNewMinNewMax) + newMin
+				values[i] = (((values[i] - minRow[i]) / diffMinMax) * diffNewMinNewMax) + newMin
 		}
 	}
 
@@ -39,9 +39,9 @@ class Row constructor(
 	 */
 	fun zScore(avg: Array<BigDecimal>, stddev: Array<BigDecimal>)
 	{
-		for (i in attributes.indices)
+		for (i in values.indices)
 			if (dataSet!!.isNumerico(i) && stddev[i] != ZERO)
-				attributes[i] = (attributes[i] - avg[i]) / stddev[i]
+				values[i] = (values[i] - avg[i]) / stddev[i]
 	}
 
 	/**
@@ -50,12 +50,12 @@ class Row constructor(
 	 */
 	fun decimalScaling(j: IntArray)
 	{
-		for (i in attributes.indices)
+		for (i in values.indices)
 			if (dataSet!!.isNumerico(i))
-				attributes[i] = attributes[i].movePointLeft(j[i]).stripTrailingZeros()
+				values[i] = values[i].movePointLeft(j[i]).stripTrailingZeros()
 	}
 
 	override fun toString(): String {
-		return "Row(indice=$indice,attributes=${attributes.contentToString()})"
+		return "Row(indice=$indice,attributes=${values.contentToString()})"
 	}
 }

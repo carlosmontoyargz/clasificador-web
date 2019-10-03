@@ -51,7 +51,7 @@ class DataSetFileService
 								throw IOException("No se especifico correctamente el numero de renglones")
 							this.add(Row(
 									indice = i,
-									attributes = iterator.next()
+									values = iterator.next()
 											.split(separator).stream()
 											.map { BigDecimal(it) }
 											.toArray { length -> arrayOfNulls<BigDecimal>(length)}))
