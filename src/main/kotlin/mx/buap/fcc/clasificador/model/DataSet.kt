@@ -22,6 +22,8 @@ open class DataSet(
 
 	val columnSize: Int = attributes.size
 
+	val rowList get() = rows as List<Row>
+
 	/**
 	 * Calcula el minimo para cada atributo de este DataSet. Si el atributo es de tipo
 	 * nominal, entonces el resultado asignado para esa columna es 0

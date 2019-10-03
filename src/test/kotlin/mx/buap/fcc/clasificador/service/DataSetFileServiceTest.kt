@@ -12,8 +12,8 @@ import org.springframework.test.context.junit4.SpringRunner
 
 @SpringBootTest
 @RunWith(SpringRunner::class)
-class DataSetFileServiceTest {
-
+class DataSetFileServiceTest
+{
 	@Autowired
 	val dataSetFileService: DataSetFileService? = null
 

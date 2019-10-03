@@ -44,19 +44,19 @@ class DataSetFileService
 				if (n > 0) attributes[i] = Attribute(AttributeType.NOMINAL, n)
 			}
 
-			val dataSet = DataSet(attributes = attributes)
-			for (i in 1..rowSize) {
-				if (!iterator.hasNext())
-					throw IOException("No se especifico correctamente el numero de renglones")
-
-				dataSet.add(Row(
-						indice = i,
-						attributes = iterator.next()
-								.split(separator).stream()
-								.map { BigDecimal(it) }
-								.toArray { length -> arrayOfNulls<BigDecimal>(length)}))
-			}
-			return dataSet
+			return DataSet(attributes = attributes)
+					.apply {
+						for (i in 1..rowSize) {
+							if (!iterator.hasNext())
+								throw IOException("No se especifico correctamente el numero de renglones")
+							this.add(Row(
+									indice = i,
+									attributes = iterator.next()
+											.split(separator).stream()
+											.map { BigDecimal(it) }
+											.toArray { length -> arrayOfNulls<BigDecimal>(length)}))
+						}
+					}
 		}
 	}
 }
