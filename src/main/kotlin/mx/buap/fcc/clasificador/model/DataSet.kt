@@ -24,6 +24,8 @@ open class DataSet(
 
 	val rowList get() = rows as List<Row>
 
+	private val log = LogManager.getLogger()
+
 	/**
 	 * Calcula el minimo para cada atributo de este DataSet. Si el atributo es de tipo
 	 * nominal, entonces el resultado asignado para esa columna es 0
@@ -42,8 +44,6 @@ open class DataSet(
 		return minCache!!
 	}
 	private var minCache: Array<BigDecimal>? = null
-
-	private val log = LogManager.getLogger()
 
 	/**
 	 * Agrega un Row a este DataSet, si el numero de columnas de ese Row
@@ -76,7 +76,7 @@ open class DataSet(
 	 * @param c El numero de columna
 	 * @return Si el tipo de atributo es numerico.
 	 */
-	fun isNumerico(c: Int): Boolean = AttributeType.NUMERICO == attributes[c].type
+	fun isNumerical(c: Int): Boolean = AttributeType.NUMERICAL == attributes[c].type
 
 	/**
 	 * Retorna true si la columna especificada es atributo de tipo nominal.
@@ -93,13 +93,16 @@ open class DataSet(
 	 * @return la representacion textual de este DataSet
 	 */
 	override fun toString(): String {
-		val sb = StringBuilder()
-		rows.forEach { r -> sb.append(r).append("\n") }
 		return "DataSet{\n" +
 				"rowSize=" + rows.size + "\n" +
 				"atributes=" + attributes + "\n" +
-				"rows={\n" + sb.toString() + "}" +
-				'}'.toString()
+				"rows={\n" +
+				StringBuilder()
+						.apply {
+							rows.forEach { r -> this.append(r).append("\n") }
+						} +
+				"}\n" +
+				'}'
 	}
 
 	override fun equals(other: Any?): Boolean {

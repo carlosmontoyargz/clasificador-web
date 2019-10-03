@@ -12,7 +12,7 @@ import java.math.BigDecimal
 @Service
 class DataSetFileService
 {
-	companion object { private const val separator = "," }
+	companion object { const val delimiter = "," }
 
 	/**
 	 * Crea un DataSet a partir de un archivo CSV apuntado por el filaname.
@@ -28,17 +28,17 @@ class DataSetFileService
 			val iterator = sequence.iterator()
 
 			val rowSize =
-					if (iterator.hasNext()) iterator.next().split(separator)[0].toInt()
+					if (iterator.hasNext()) iterator.next().split(delimiter)[0].toInt()
 					else throw IOException("No se especifico el numero de renglones")
 			val attSize =
-					if (iterator.hasNext()) iterator.next().split(separator)[0].toInt()
+					if (iterator.hasNext()) iterator.next().split(delimiter)[0].toInt()
 					else throw IOException("No se especifico el numero de columnas")
 
-			val attSplit = iterator.next().split(separator)
+			val attSplit = iterator.next().split(delimiter)
 			if (attSplit.size != attSize)
 				throw IOException("No se especifico correctamente el numero de atributos")
 
-			val attributes = MutableList(attSize) { Attribute(AttributeType.NUMERICO) }
+			val attributes = MutableList(attSize) { Attribute(AttributeType.NUMERICAL) }
 			for (i in attributes.indices) {
 				val n = attSplit[i].toInt()
 				if (n > 0) attributes[i] = Attribute(AttributeType.NOMINAL, n)
@@ -52,7 +52,7 @@ class DataSetFileService
 							this.add(Row(
 									indice = i,
 									values = iterator.next()
-											.split(separator).stream()
+											.split(delimiter).stream()
 											.map { BigDecimal(it) }
 											.toArray { length -> arrayOfNulls<BigDecimal>(length)}))
 						}

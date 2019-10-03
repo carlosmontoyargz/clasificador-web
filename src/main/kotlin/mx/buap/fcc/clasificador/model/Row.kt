@@ -28,7 +28,7 @@ class Row constructor(
 		val diffNewMinNewMax = newMax - newMin
 		for (i in values.indices) {
 			val diffMinMax = maxRow[i] - minRow[i]
-			if (dataSet!!.isNumerico(i))
+			if (dataSet!!.isNumerical(i))
 				values[i] = (((values[i] - minRow[i]) / diffMinMax) * diffNewMinNewMax) + newMin
 		}
 	}
@@ -40,7 +40,7 @@ class Row constructor(
 	fun zScore(avg: Array<BigDecimal>, stddev: Array<BigDecimal>)
 	{
 		for (i in values.indices)
-			if (dataSet!!.isNumerico(i) && stddev[i] != ZERO)
+			if (dataSet!!.isNumerical(i) && stddev[i] != ZERO)
 				values[i] = (values[i] - avg[i]) / stddev[i]
 	}
 
@@ -51,7 +51,7 @@ class Row constructor(
 	fun decimalScaling(j: IntArray)
 	{
 		for (i in values.indices)
-			if (dataSet!!.isNumerico(i))
+			if (dataSet!!.isNumerical(i))
 				values[i] = values[i].movePointLeft(j[i]).stripTrailingZeros()
 	}
 

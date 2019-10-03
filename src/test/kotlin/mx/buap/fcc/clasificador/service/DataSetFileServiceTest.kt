@@ -25,7 +25,7 @@ class DataSetFileServiceTest
 
 		assertEquals(694, dataSet.rowSize)
 		assertEquals(14, dataSet.columnSize)
-		dataSet.attributes.forEach { c -> assertEquals(AttributeType.NUMERICO, c.type)}
+		dataSet.attributes.forEach { c -> assertEquals(AttributeType.NUMERICAL, c.type)}
 
 		log.info(dataSet)
 	}
