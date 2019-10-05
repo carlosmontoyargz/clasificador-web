@@ -9,10 +9,6 @@ data class DataSetDTO(
 		var attributes: List<AttributeDTO> = emptyList(),
 		var rowList: List<RowDTO> = emptyList())
 
-data class AttributeDTO(
-		var type: AttributeType? = null,
-		var size: Int = 0)
+data class AttributeDTO(var type: AttributeType? = null, var size: Int = 0)
 
-data class RowDTO(
-		var indice: Int = 0,
-		var values: Array<BigDecimal> = emptyArray())
+data class RowDTO(var indice: Int = 0, var values: Array<BigDecimal> = emptyArray())
