@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.junit4.SpringRunner
 import java.math.BigDecimal
+import java.math.BigDecimal.*
 
 @SpringBootTest
 @RunWith(SpringRunner::class)
@@ -21,16 +22,16 @@ class DataSetTest
 
 	@Test
 	fun minMax() {
-		val dataSet = dataSetFileService!!.loadFromFile("csv-samples/Heart694.csv")
+		val dataSet = dataSetFileService!!.loadFromFile("Heart694.csv")
 		log.info(dataSet)
 
-		dataSet.minMax(BigDecimal.ZERO, BigDecimal.ONE)
+		dataSet.minMax(ZERO, ONE)
 		log.info(dataSet)
 	}
 
 	@Test
 	fun zScore() {
-		val dataSet = dataSetFileService!!.loadFromFile("csv-samples/Heart694.csv")
+		val dataSet = dataSetFileService!!.loadFromFile("Heart694.csv")
 		log.info(dataSet)
 
 		dataSet.zScore()

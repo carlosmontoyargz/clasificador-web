@@ -13,9 +13,7 @@ class Row constructor(
 		val values: Array<BigDecimal>,
 		var dataSet: DataSet? = null)
 {
-	companion object {
-		const val precision = 13
-	}
+	companion object { const val precision = 13 }
 
 	operator fun get(i: Int) = values[i]
 

@@ -11,7 +11,7 @@ import java.math.BigDecimal
 @Service
 class DataSetFileService
 {
-	companion object { const val delimiter = "," }
+	companion object { const val delimiter = ","; const val basePath = "csv-samples" }
 
 	/**
 	 * Crea un DataSet a partir de un archivo CSV apuntado por el filaname.
@@ -23,7 +23,7 @@ class DataSetFileService
 	@Throws(IOException::class)
 	fun loadFromFile(filename: String): DataSet
 	{
-		return File(filename).useLines<DataSet> { sequence ->
+		return File("$basePath/$filename").useLines<DataSet> { sequence ->
 			val iterator = sequence.iterator()
 
 			val rowSize =

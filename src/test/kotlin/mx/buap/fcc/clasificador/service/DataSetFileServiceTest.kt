@@ -23,7 +23,7 @@ class DataSetFileServiceTest
 
 	@Test
 	fun loadNumericDataSetFromFile() {
-		val dataSet = dataSetFileService!!.loadFromFile("csv-samples/Heart694.csv")
+		val dataSet = dataSetFileService!!.loadFromFile("Heart694.csv")
 
 		assertEquals(694, dataSet.rowsSize)
 		assertEquals(14, dataSet.attributesSize)
@@ -34,7 +34,7 @@ class DataSetFileServiceTest
 
 	@Test
 	fun loadMixedDataSetFromFile() {
-		val dataSet = dataSetFileService!!.loadFromFile("csv-samples/MixedData.csv")
+		val dataSet = dataSetFileService!!.loadFromFile("MixedData.csv")
 
 		assertEquals(194, dataSet.rowsSize)
 		assertEquals(29, dataSet.attributesSize)
