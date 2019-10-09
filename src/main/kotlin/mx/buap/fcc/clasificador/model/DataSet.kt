@@ -21,10 +21,19 @@ open class DataSet(
 		private val idGenerator = AtomicInteger(0)
 	}
 
+	/**
+	 * Las lista de instancias de este DataSet
+	 */
 	private val rows: MutableList<Row> = mutableListOf()
 
+	/**
+	 * El numero de instancias de este DataSet
+	 */
 	val rowsSize: Int get() = rows.size
 
+	/**
+	 * El numero de atributosd de este DataSet
+	 */
 	val attributesSize: Int = attributes.size
 
 	/**
