@@ -6,7 +6,6 @@ import java.math.BigDecimal
 import java.math.BigDecimal.*
 import java.math.RoundingMode
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.stream.Collectors
 import java.util.stream.Stream
 
 /**
@@ -69,6 +68,40 @@ open class DataSet(
 	fun zScore() { rows.forEach { row -> row.zScore() } }
 
 	/**
+	 * Normaliza este DataSet mediante el metodo decimal-scaling.
+	 *
+	 */
+	fun decimalScaling() {
+		val maxOrderMagnitude = getMaxOrderMagnitude()
+		rows.forEach { row -> row.decimalScaling(maxOrderMagnitude) }
+	}
+
+	/**
+	 * Obtiene el maximo orden de magnitud para cada atributo de este DataSet, y retorna
+	 * el resultado en un arreglo de enteros. Si el atributo es de tipo nominal, entonces
+	 * el resultado asignado para esa columna es 0
+	 *
+	 * @return un arreglo de enteros con los maximos ordenes de magnitud
+	 */
+	private fun getMaxOrderMagnitude(): IntArray {
+		val j = IntArray(attributesSize)
+		for (i in 0 until attributesSize) {
+			if (isNumerical(i)) {
+				var tenPower = 0
+				var n = absoluteMax[i]
+				while (n > ONE) {
+					tenPower++
+					n = n.movePointLeft(1)
+				}
+				j[i] = tenPower
+			}
+			else j[i] = 0
+		}
+		log.debug("Positions to move: {}", j.contentToString())
+		return j
+	}
+
+	/**
 	 * Calcula el minimo para cada atributo de este DataSet. Si el atributo es de tipo
 	 * nominal, entonces el resultado asignado para esa columna es 0
 	 */
@@ -78,7 +111,7 @@ open class DataSet(
 			maxCache = Array(attributesSize) { ZERO }
 			for (i in 0 until attributesSize)
 				if (isNumerical(i))
-					maxCache!![i] = getColumnStream(i)
+					maxCache!![i] = getAttributeStream(i)
 							.max { o1, o2 -> o1.compareTo(o2) }
 							.orElse(ZERO)
 			log.info("Maximum computed: ${maxCache!!.contentToString()}")
@@ -99,7 +132,7 @@ open class DataSet(
 			minCache = Array(attributesSize) { ZERO }
 			for (i in 0 until attributesSize)
 				if (isNumerical(i))
-					minCache!![i] = getColumnStream(i)
+					minCache!![i] = getAttributeStream(i)
 							.min { o1, o2 -> o1.compareTo(o2) }
 							.orElse(ZERO)
 			log.info("Minimum computed: ${minCache!!.contentToString()}")
@@ -118,7 +151,7 @@ open class DataSet(
 			for (i in 0 until attributesSize)
 				if (isNumerical(i))
 					stdDvnCache!![i] = MathTools
-							.sqrt(getColumnStream(i)
+							.sqrt(getAttributeStream(i)
 									.map { v -> v
 											.subtract(average[i])
 											.pow(2)
@@ -144,7 +177,7 @@ open class DataSet(
 						else modeAtAttribute(i)
 					}
 					.toTypedArray()
-			log.info("Average computed: ${avgCache!!.contentToString()}")
+			log.debug("Average computed: ${avgCache!!.contentToString()}")
 		}
 		return avgCache!!
 	}
@@ -157,7 +190,7 @@ open class DataSet(
 	 */
 	private fun averageAtAtribute(i: Int): BigDecimal =
 			if (rows.size == 0) ZERO
-			else getColumnStream(i)
+			else getAttributeStream(i)
 					.reduce(ZERO) { sum, augend -> sum.add(augend) }
 					.divide(BigDecimal(rows.size), Row.precision, RoundingMode.HALF_UP)
 
@@ -167,7 +200,7 @@ open class DataSet(
 	 * @return la moda del i-esimo atributo de este DataSet.
 	 */
 	private fun modeAtAttribute(n: Int): BigDecimal {
-		val columnValues = getColumnStream(n).toArray<BigDecimal> { arrayOfNulls(rowsSize)}
+		val columnValues = getAttributeStream(n).toArray<BigDecimal> { arrayOfNulls(rowsSize)}
 		var mode = ZERO ; var maxCount = 0
 		var i = 0; var j: Int
 		while (i < columnValues.size) {
@@ -186,29 +219,48 @@ open class DataSet(
 	}
 
 	/**
-	 * Retorna un Stream con los valores de la columna especificada.
-	 *
-	 * @param column numero de la columna a calcular
-	 * @return un Stream con los valores de una columna especifica.
+	 * Calcula el maximo absoluto para cada atributo de este DataSet. Si el atributo
+	 * es de tipo nominal, entonces el resultado asignado para esa columna es 0
 	 */
-	private fun getColumnStream(column: Int): Stream<BigDecimal> =
-			rows.stream().map { row -> row[column] }
+	val absoluteMax: Array<BigDecimal>
+	get() {
+		if (absMaxCache == null) {
+			absMaxCache = Array(attributesSize) { ZERO }
+			for (i in 0 until attributesSize)
+				if (isNumerical(i))
+					absMaxCache!![i] = getAttributeStream(i)
+							.map { it.abs() }
+							.max { o1, o2 -> o1.compareTo(o2) }
+							.orElse(ZERO)
+			log.info("Absolute maximum computed: ${absMaxCache!!.contentToString()}")
+		}
+		return absMaxCache!!
+	}
+	private var absMaxCache: Array<BigDecimal>? = null
+
+	/**
+	 * Retorna un Stream con los valores del atributo especificado.
+	 *
+	 * @param a posicion del atributo
+	 * @return un Stream con los valores de un atributo especifico.
+	 */
+	fun getAttributeStream(a: Int): Stream<BigDecimal> = rows.stream().map { row -> row[a] }
 
 	/**
 	 * Retorna true si la columna especificada es atributo de tipo numerico.
 	 *
-	 * @param c El numero de columna
+	 * @param a El numero de columna
 	 * @return Si el tipo de atributo es numerico.
 	 */
-	fun isNumerical(c: Int): Boolean = AttributeType.NUMERICAL == attributes[c].type
+	fun isNumerical(a: Int): Boolean = AttributeType.NUMERICAL == attributes[a].type
 
 	/**
 	 * Retorna true si la columna especificada es atributo de tipo nominal.
 	 *
-	 * @param c El numero de columna
+	 * @param a El numero de columna
 	 * @return Si el tipo de atributo es nominal.
 	 */
-	fun isNominal(c: Int): Boolean = AttributeType.NOMINAL == attributes[c].type
+	fun isNominal(a: Int): Boolean = AttributeType.NOMINAL == attributes[a].type
 
 	override fun iterator(): Iterator<Row> = rows.iterator()
 

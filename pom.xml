@@ -125,6 +125,7 @@
           <arguments>
             <argument>build</argument>
             <argument>&#45;&#45;output-path="./src/main/resources/static"</argument>
+            TODO agregar bandera de produccion
           </arguments>
         </configuration>
       </plugin>-->
