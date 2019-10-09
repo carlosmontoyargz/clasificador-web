@@ -2,6 +2,7 @@ package mx.buap.fcc.clasificador.model
 
 import java.math.BigDecimal
 import java.math.BigDecimal.*
+import java.math.RoundingMode
 
 /**
  *
@@ -12,24 +13,32 @@ class Row constructor(
 		val values: Array<BigDecimal>,
 		var dataSet: DataSet? = null)
 {
-	fun size() = values.size
+	companion object {
+		const val precision = 13
+	}
 
 	operator fun get(i: Int) = values[i]
 
 	operator fun set(i: Int, att: BigDecimal) { values[i] = att }
 
+	fun size() = values.size
+
 	/**
 	 * Normaliza este DataRow mediante el metodo min-max, a partir de los parametros especificados.
 	 *
 	 */
-	fun minmax(minRow: Array<BigDecimal>, maxRow: Array<BigDecimal>,
-			   newMin: BigDecimal, newMax: BigDecimal)
+	fun minmax(newMin: BigDecimal, newMax: BigDecimal)
 	{
 		val diffNewMinNewMax = newMax - newMin
 		for (i in values.indices) {
 			val diffMinMax = maxRow[i] - minRow[i]
 			if (dataSet!!.isNumerical(i))
-				values[i] = (((values[i] - minRow[i]) / diffMinMax) * diffNewMinNewMax) + newMin
+				values[i] = values[i]
+						.subtract(dataSet!!.minimum[i])
+						.divide(diffMinMax, precision, RoundingMode.HALF_UP)
+						.multiply(diffNewMinNewMax)
+						.add(newMin)
+						.stripTrailingZeros()
 		}
 	}
 
@@ -37,11 +46,16 @@ class Row constructor(
 	 * Normaliza este Row mediante el metodo z-score, a partir de los parametros especificados.
 	 *
 	 */
-	fun zScore(avg: Array<BigDecimal>, stddev: Array<BigDecimal>)
-	{
-		for (i in values.indices)
-			if (dataSet!!.isNumerical(i) && stddev[i] != ZERO)
-				values[i] = (values[i] - avg[i]) / stddev[i]
+	fun zScore() {
+		val stdDvtn = dataSet!!.standardDeviation
+		val avrg = dataSet!!.average
+		for (i in values.indices) {
+			if (dataSet!!.isNumerical(i) && stdDvtn[i] != ZERO )
+				values[i] = values[i]
+						.subtract(avrg[i])
+						.divide(stdDvtn[i], precision, RoundingMode.HALF_UP)
+						.stripTrailingZeros()
+		}
 	}
 
 	/**

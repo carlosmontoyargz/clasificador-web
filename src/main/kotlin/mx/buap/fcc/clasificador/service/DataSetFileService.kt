@@ -1,6 +1,5 @@
 package mx.buap.fcc.clasificador.service
 
-import mx.buap.fcc.clasificador.model.AttributeType
 import mx.buap.fcc.clasificador.model.Attribute
 import mx.buap.fcc.clasificador.model.DataSet
 import mx.buap.fcc.clasificador.model.Row
@@ -34,17 +33,11 @@ class DataSetFileService
 					if (iterator.hasNext()) iterator.next().split(delimiter)[0].toInt()
 					else throw IOException("No se especifico el numero de columnas")
 
-			val attSplit = iterator.next().split(delimiter)
-			if (attSplit.size != attSize)
+			val attributes: List<String> = iterator.next().split(delimiter)
+			if (attributes.size != attSize)
 				throw IOException("No se especifico correctamente el numero de atributos")
 
-			val attributes = MutableList(attSize) { Attribute(AttributeType.NUMERICAL) }
-			for (i in attributes.indices) {
-				val n = attSplit[i].toInt()
-				if (n > 0) attributes[i] = Attribute(AttributeType.NOMINAL, n)
-			}
-
-			return DataSet(attributes = attributes)
+			return DataSet(attributes = attributes.map { str -> Attribute.fromInt(str.toInt()) })
 					.apply {
 						for (i in 1..rowSize) {
 							if (!iterator.hasNext())

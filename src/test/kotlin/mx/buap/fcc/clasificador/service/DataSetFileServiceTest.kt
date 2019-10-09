@@ -1,6 +1,8 @@
 package mx.buap.fcc.clasificador.service
 
+import mx.buap.fcc.clasificador.model.Attribute
 import mx.buap.fcc.clasificador.model.AttributeType
+import mx.buap.fcc.clasificador.model.AttributeType.*
 import org.apache.logging.log4j.LogManager
 import org.junit.Test
 
@@ -23,9 +25,9 @@ class DataSetFileServiceTest
 	fun loadNumericDataSetFromFile() {
 		val dataSet = dataSetFileService!!.loadFromFile("csv-samples/Heart694.csv")
 
-		assertEquals(694, dataSet.rowSize)
-		assertEquals(14, dataSet.columnSize)
-		dataSet.attributes.forEach { c -> assertEquals(AttributeType.NUMERICAL, c.type)}
+		assertEquals(694, dataSet.rowsSize)
+		assertEquals(14, dataSet.attributesSize)
+		dataSet.attributes.forEach { c -> assertEquals(NUMERICAL, c.type)}
 
 		log.info(dataSet)
 	}
@@ -34,9 +36,13 @@ class DataSetFileServiceTest
 	fun loadMixedDataSetFromFile() {
 		val dataSet = dataSetFileService!!.loadFromFile("csv-samples/MixedData.csv")
 
-		assertEquals(194, dataSet.rowSize)
-		assertEquals(29, dataSet.columnSize)
-//		dataSet.columns.forEach { c -> assertEquals(AttributeType.NUMERICO, c.attributeType)}
+		assertEquals(194, dataSet.rowsSize)
+		assertEquals(29, dataSet.attributesSize)
+		assertEquals(Attribute(NOMINAL, 6), dataSet.attributes[0])
+		assertEquals(Attribute(NOMINAL, 4), dataSet.attributes[1])
+		assertEquals(Attribute(NUMERICAL, 0), dataSet.attributes[2])
+		assertEquals(Attribute(NUMERICAL, 0), dataSet.attributes[3])
+		assertEquals(Attribute(NOMINAL, 10), dataSet.attributes[4])
 
 		log.info(dataSet)
 	}
