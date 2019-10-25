@@ -1,1 +1,5 @@
-server.port: 8080
+server:
+  port: 8080
+logging:
+  level:
+    mx.buap.fcc.clasificador.service.DataSetFileService: debug

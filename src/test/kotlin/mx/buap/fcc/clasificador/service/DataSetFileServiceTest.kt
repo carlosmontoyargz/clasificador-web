@@ -16,12 +16,17 @@ import org.springframework.test.context.junit4.SpringRunner
 @RunWith(SpringRunner::class)
 class DataSetFileServiceTest
 {
-	@Autowired
-	val dataSetFileService: DataSetFileService? = null
+	@Autowired lateinit var dataSetFileService: DataSetFileService
 
 	private val log = LogManager.getLogger()
 
 	@Test
+	fun loadData() {
+		val ds = dataSetFileService.loadFromFile("seg-data.txt")
+		log.info(ds)
+	}
+	
+	/*@Test
 	fun loadNumericDataSetFromFile() {
 		val dataSet = dataSetFileService!!.loadFromFile("Heart694.csv")
 
@@ -45,5 +50,5 @@ class DataSetFileServiceTest
 		assertEquals(Attribute(NOMINAL, 10), dataSet.attributes[4])
 
 		log.info(dataSet)
-	}
+	}*/
 }

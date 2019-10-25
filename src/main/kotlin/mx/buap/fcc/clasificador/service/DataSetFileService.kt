@@ -1,8 +1,8 @@
 package mx.buap.fcc.clasificador.service
 
-import mx.buap.fcc.clasificador.model.Attribute
 import mx.buap.fcc.clasificador.model.DataSet
 import mx.buap.fcc.clasificador.model.Row
+import org.apache.logging.log4j.LogManager
 import org.springframework.stereotype.Service
 import java.io.File
 import java.io.IOException
@@ -11,7 +11,11 @@ import java.math.BigDecimal
 @Service
 class DataSetFileService
 {
-	companion object { const val delimiter = ","; const val basePath = "csv-samples" }
+	companion object {
+		const val delimiter = ",";
+		const val basePath = "csv-samples" ;
+		private val log = LogManager.getLogger()
+	}
 
 	/**
 	 * Crea un DataSet a partir de un archivo CSV apuntado por el filaname.
@@ -24,30 +28,34 @@ class DataSetFileService
 	fun loadFromFile(filename: String): DataSet
 	{
 		return File("$basePath/$filename").useLines<DataSet> { sequence ->
-			val iterator = sequence.iterator()
+			val rowItr = sequence.iterator()
 
 			val rowSize =
-					if (iterator.hasNext()) iterator.next().split(delimiter)[0].toInt()
+					if (rowItr.hasNext()) rowItr.next().split(delimiter)[0].toInt()
 					else throw IOException("No se especifico el numero de renglones")
 			val attSize =
-					if (iterator.hasNext()) iterator.next().split(delimiter)[0].toInt()
+					if (rowItr.hasNext()) rowItr.next().split(delimiter)[0].toInt()
 					else throw IOException("No se especifico el numero de columnas")
+			val classSize =
+					if (rowItr.hasNext()) rowItr.next().split(delimiter)[0].toInt()
+					else throw IOException("No se especifico el numero de clases")
+			log.debug("{} {} {}", rowSize, attSize, classSize)
 
-			val attributes: List<String> = iterator.next().split(delimiter)
+			/*val attributes: List<String> = iterator.next().split(delimiter)
 			if (attributes.size != attSize)
-				throw IOException("No se especifico correctamente el numero de atributos")
+				throw IOException("No se especifico correctamente el numero de atributos")*/
+			// attributes = attributes.map { str -> Attribute.fromInt(str.toInt()) }
 
-			return DataSet(attributes = attributes.map { str -> Attribute.fromInt(str.toInt()) })
+			return DataSet(attSize, classSize)
 					.apply {
 						for (i in 1..rowSize) {
-							if (!iterator.hasNext())
+							if (!rowItr.hasNext())
 								throw IOException("No se especifico correctamente el numero de renglones")
-							this.add(Row(
-									indice = i,
-									values = iterator.next()
-											.split(delimiter).stream()
-											.map { BigDecimal(it) }
-											.toArray { length -> arrayOfNulls<BigDecimal>(length)}))
+
+							val columnItr = rowItr.next().split(delimiter).iterator()
+							add(Row(indice = i,
+									values = Array(attSize) { BigDecimal(columnItr.next()) },
+									clazz = columnItr.next().toInt()))
 						}
 					}
 		}

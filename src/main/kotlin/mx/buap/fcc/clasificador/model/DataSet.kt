@@ -12,14 +12,25 @@ import java.util.stream.Stream
  * @author Carlos Montoya
  * @since 13/03/2019
  */
-open class DataSet(
-		val id: Int = idGenerator.incrementAndGet(),
-		val attributes: List<Attribute>) : Iterable<Row>
+open class DataSet
+	constructor(val id: Int = idGenerator.incrementAndGet(),
+				val attributes: List<Attribute>,
+				val classSize: Int)
+	: Iterable<Row>
 {
 	companion object {
 		private val log = LogManager.getLogger()
 		private val idGenerator = AtomicInteger(0)
 	}
+
+	/**
+	 * Construye un DataSet con el tamano especificado con todos los atributos
+	 * como numericos.
+	 *
+	 */
+	constructor(attSize: Int, classSize: Int):
+			this(attributes = List(attSize) { Attribute(AttributeType.NUMERICAL) },
+				 classSize = classSize)
 
 	/**
 	 * Las lista de instancias de este DataSet
@@ -53,12 +64,15 @@ open class DataSet(
 	 */
 	fun add(row: Row) : Boolean {
 		if (row.size() != attributesSize) return false
+		//if (!hasClass(row.clazz)) return false
 
 		// TODO verificar los atributos nominales y los cache de min y max
 		rows.add(row)
 		row.dataSet = this
 		return true
 	}
+
+	fun hasClass(clazz: Int) = clazz in 0 until classSize
 
 	/**
 	 * Normaliza este DataSet mediante el metodo min-max.
@@ -277,18 +291,19 @@ open class DataSet(
 	 * Representa este DataSet en un String
 	 * @return la representacion textual de este DataSet
 	 */
-	override fun toString(): String {
-		return "DataSet{\n" +
-				"rowSize=" + rows.size + "\n" +
-				"atributes=" + attributes + "\n" +
-				"rows={\n" +
-				StringBuilder()
-						.apply {
-							rows.forEach { r -> this.append(r).append("\n") }
-						} +
-				"}\n" +
-				'}'
-	}
+	override fun toString(): String =
+			"DataSet{\n" +
+			"	rowSize=" + rows.size + "\n" +
+			"	attributeSize=" + attributesSize + "\n" +
+			"	classSize=" + classSize + "\n" +
+			"	atributes=" + attributes + "\n" +
+			"	rows={\n" +
+					StringBuilder()
+							.apply { rows.forEach {
+								r -> this.append("		").append(r).append("\n") } }
+							.toString() +
+			"	}\n" +
+			"}"
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true

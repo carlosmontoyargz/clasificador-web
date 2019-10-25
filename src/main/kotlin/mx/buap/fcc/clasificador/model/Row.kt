@@ -8,10 +8,11 @@ import java.math.RoundingMode
  *
  * @author Carlos Montoya
  */
-class Row constructor(
-		val indice: Int = 0,
-		val values: Array<BigDecimal>,
-		var dataSet: DataSet? = null)
+class Row
+	constructor(val indice: Int = 0,
+				val values: Array<BigDecimal>,
+				val clazz: Int,
+				var dataSet: DataSet? = null)
 {
 	companion object { const val precision = 13 }
 
@@ -68,6 +69,6 @@ class Row constructor(
 	}
 
 	override fun toString(): String {
-		return "Row(indice=$indice,attributes=${values.contentToString()})"
+		return "Row(indice=$indice, clazz=$clazz, values=${values.contentToString()})"
 	}
 }

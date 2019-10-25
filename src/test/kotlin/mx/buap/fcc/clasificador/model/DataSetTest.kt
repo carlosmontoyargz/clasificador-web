@@ -15,32 +15,32 @@ import java.math.BigDecimal.*
 class DataSetTest
 {
 	@Autowired
-	private val dataSetFileService: DataSetFileService? = null
-	private var dataSetTest: DataSet? = null
+	private lateinit var dataSetFileService: DataSetFileService
+	private lateinit var dataSetTest: DataSet
 
 	private val log = LogManager.getLogger()
 
-	@Before
+	/*@Before
 	fun setDataSet() {
-		dataSetTest = dataSetFileService!!.loadFromFile("Heart694.csv")
+		dataSetTest = dataSetFileService.loadFromFile("Heart694.csv")
 		log.info(dataSetTest)
 	}
 
 	@Test
 	fun minMax() {
-		dataSetTest!!.minMax(ZERO, ONE)
+		dataSetTest.minMax(ZERO, ONE)
 		log.info(dataSetTest)
 	}
 
 	@Test
 	fun zScore() {
-		dataSetTest!!.zScore()
+		dataSetTest.zScore()
 		log.info(dataSetTest)
 	}
 
 	@Test
 	fun decimalScaling() {
-		dataSetTest!!.decimalScaling()
+		dataSetTest.decimalScaling()
 		log.info(dataSetTest)
-	}
+	}*/
 }
