@@ -37,6 +37,8 @@ open class DataSet
 	 */
 	private val rows: MutableList<Row> = mutableListOf()
 
+	val rowList get() = rows.toList()
+
 	/**
 	 * El numero de instancias de este DataSet
 	 */
@@ -64,15 +66,15 @@ open class DataSet
 	 */
 	fun add(row: Row) : Boolean {
 		if (row.size() != attributesSize) return false
-		//if (!hasClass(row.clazz)) return false
+		//if (!validClass(row.clazz)) return false
 
 		// TODO verificar los atributos nominales y los cache de min y max
 		rows.add(row)
-		row.dataSet = this
+		row.setDataSet(this)
 		return true
 	}
 
-	fun hasClass(clazz: Int) = clazz in 0 until classSize
+	fun validClass(clazz: Int) = clazz in 0 until classSize
 
 	/**
 	 * Normaliza este DataSet mediante el metodo min-max.

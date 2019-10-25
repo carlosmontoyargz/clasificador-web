@@ -11,10 +11,13 @@ import java.math.RoundingMode
 class Row
 	constructor(val indice: Int = 0,
 				val values: Array<BigDecimal>,
-				val clazz: Int,
-				var dataSet: DataSet? = null)
+				val clazz: Int)
 {
 	companion object { const val precision = 13 }
+
+	private var dataSet: DataSet? = null
+
+	fun setDataSet(ds: DataSet) { this.dataSet = ds }
 
 	operator fun get(i: Int) = values[i]
 

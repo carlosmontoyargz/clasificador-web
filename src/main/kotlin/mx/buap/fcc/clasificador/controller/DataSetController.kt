@@ -22,9 +22,9 @@ class DataSetController
 	private val log = LogManager.getLogger()
 
 	@GetMapping("/{id}")
-	fun getById(@PathVariable id: String) : ResponseEntity<DataSetDTO> =
+	fun getById(@PathVariable id: String): ResponseEntity<DataSetDTO> =
 			ResponseEntity.ok(
 					modelMapper.map(
-							dataSetFileService.loadFromFile("csv-samples/$id"),
+							dataSetFileService.loadFromFile(id),
 							DataSetDTO::class.java))
 }
