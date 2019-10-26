@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 
 import * as Highcharts from 'highcharts';
 import highcharts3D from 'highcharts/highcharts-3d.src';
+import {DataSetService} from "../../services/data-set.service";
 highcharts3D(Highcharts);
 
 declare var require: any;
@@ -28,7 +29,7 @@ export class DashboardComponent implements OnInit {
         enabled: true,
         alpha: 20,
         beta: 30,
-        depth: 600,
+        depth: 650,
         viewDistance: 7,
         frame:{
           bottom :{
@@ -61,7 +62,8 @@ export class DashboardComponent implements OnInit {
       min:0,
       ax:10
     },
-    series : [{
+    series : []
+    /*[{
       name: 'Reading',
       data: [
         [1, 6, 5], [8, 7, 9], [1, 3, 4], [4, 6, 8], [5, 7, 7], [6, 9, 6],
@@ -82,13 +84,29 @@ export class DashboardComponent implements OnInit {
         [5, 1, 2], [9, 9, 7], [6, 9, 9], [8, 4, 3], [4, 1, 7], [6, 2, 5],
         [0, 4, 9], [3, 5, 9], [6, 9, 1], [1, 9, 2]
       ]
-    }]
+    }]*/
   };
-  constructor() { }
+  constructor(private dataSetService: DataSetService) {}
 
   ngOnInit(): void {
-    let chart = Highcharts.chart('container', this.options);
+    this.dataSetService
+      .getClasses('seg-data.txt')
+      .subscribe(
+        data => {
+          console.log('Se han descargado las clases');
+          console.log(data);
 
+          data.forEach(d => this.options.series.push(d));
+          this.inicializarChart()
+        },
+        error => {
+          console.log(`Ocurrio un error al descargar las clases: ${error}`);
+        });
+    this.inicializarChart();
+  }
+
+  private inicializarChart() {
+    let chart = Highcharts.chart('container', this.options);
     let dragStart = eStart => {
       eStart = chart.pointer.normalize(eStart);
 
@@ -96,7 +114,7 @@ export class DashboardComponent implements OnInit {
         posY = eStart.chartY,
         alpha = chart.options.chart.options3d.alpha,
         beta = chart.options.chart.options3d.beta,
-        sensitivity = 5,  // lower is more sensitive
+        sensitivity = 4,  // lower is more sensitive
         handlers = [];
 
       function drag(e) {
@@ -112,6 +130,9 @@ export class DashboardComponent implements OnInit {
           }
         }, undefined, undefined, false);
       }
+      handlers.push(Highcharts.addEvent(document, 'mousemove', drag));
+      handlers.push(Highcharts.addEvent(document, 'touchmove', drag));
+
 
       function unbindAll() {
         handlers.forEach(function (unbind) {
@@ -121,11 +142,6 @@ export class DashboardComponent implements OnInit {
         });
         handlers.length = 0;
       }
-
-      handlers.push(Highcharts.addEvent(document, 'mousemove', drag));
-      handlers.push(Highcharts.addEvent(document, 'touchmove', drag));
-
-
       handlers.push(Highcharts.addEvent(document, 'mouseup', unbindAll));
       handlers.push(Highcharts.addEvent(document, 'touchend', unbindAll));
     };

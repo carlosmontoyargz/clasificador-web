@@ -1,16 +1,15 @@
 package mx.buap.fcc.clasificador.controller
 
+import mx.buap.fcc.clasificador.dto.ClassDTO
 import mx.buap.fcc.clasificador.dto.DataSetDTO
-import mx.buap.fcc.clasificador.model.DataSet
 import mx.buap.fcc.clasificador.service.DataSetFileService
 import org.apache.logging.log4j.LogManager
 import org.modelmapper.ModelMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import java.math.BigDecimal
+import java.util.stream.Collectors
 
 @RestController
 @RequestMapping("/dataset")
@@ -27,4 +26,20 @@ class DataSetController
 					modelMapper.map(
 							dataSetFileService.loadFromFile(id),
 							DataSetDTO::class.java))
+
+	@GetMapping("/{id}/classes")
+	fun getClasses(@PathVariable id: String): ResponseEntity<Array<ClassDTO>> {
+		val ds = dataSetFileService.loadFromFile(id)
+		ds.minMax(BigDecimal.ZERO, BigDecimal.TEN)
+		return ResponseEntity
+				.ok(Array(ds.classSize) { i ->
+					ClassDTO().apply {
+						name = i.toString()
+						data = ds.instances.stream()
+								.filter { it.clazz == i }
+								.map { it.values }
+								.collect(Collectors.toList())
+					}
+				})
+	}
 }

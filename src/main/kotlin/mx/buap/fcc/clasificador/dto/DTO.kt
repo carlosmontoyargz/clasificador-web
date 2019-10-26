@@ -21,3 +21,8 @@ open class RowDTO {
 	var clazz: Int = 0
 	var values: Array<BigDecimal> = emptyArray()
 }
+
+open class ClassDTO {
+	var name: String = ""
+	var data: List<Array<BigDecimal>> = emptyList()
+}
