@@ -27,17 +27,16 @@ class DataSetFileService
 	@Throws(IOException::class)
 	fun loadFromFile(filename: String): DataSet
 	{
-		return File("$basePath/$filename").useLines<DataSet> { sequence ->
-			val rowItr = sequence.iterator()
-
+		return File("$basePath/$filename").useLines<DataSet> { lines ->
+			val lineItr = lines.iterator()
 			val rowSize =
-					if (rowItr.hasNext()) rowItr.next().split(delimiter)[0].toInt()
+					if (lineItr.hasNext()) lineItr.next().split(delimiter)[0].toInt()
 					else throw IOException("No se especifico el numero de renglones")
 			val attSize =
-					if (rowItr.hasNext()) rowItr.next().split(delimiter)[0].toInt()
+					if (lineItr.hasNext()) lineItr.next().split(delimiter)[0].toInt()
 					else throw IOException("No se especifico el numero de columnas")
 			val classSize =
-					if (rowItr.hasNext()) rowItr.next().split(delimiter)[0].toInt()
+					if (lineItr.hasNext()) lineItr.next().split(delimiter)[0].toInt()
 					else throw IOException("No se especifico el numero de clases")
 			log.debug("{} {} {}", rowSize, attSize, classSize)
 
@@ -49,10 +48,10 @@ class DataSetFileService
 			return DataSet(attSize, classSize)
 					.apply {
 						for (i in 1..rowSize) {
-							if (!rowItr.hasNext())
+							if (!lineItr.hasNext())
 								throw IOException("No se especifico correctamente el numero de renglones")
 
-							val columnItr = rowItr.next().split(delimiter).iterator()
+							val columnItr = lineItr.next().split(delimiter).iterator()
 							add(Row(indice = i,
 									values = Array(attSize) { BigDecimal(columnItr.next()) },
 									clazz = columnItr.next().toInt()))

@@ -71,7 +71,5 @@ class Row
 				values[i] = values[i].movePointLeft(j[i]).stripTrailingZeros()
 	}
 
-	override fun toString(): String {
-		return "Row(indice=$indice, clazz=$clazz, values=${values.contentToString()})"
-	}
+	override fun toString() = "Row(indice=$indice, clazz=$clazz, values=${values.contentToString()})"
 }

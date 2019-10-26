@@ -5,7 +5,7 @@ import org.apache.logging.log4j.LogManager
 import java.math.BigDecimal
 import java.math.BigDecimal.*
 import java.math.RoundingMode
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.*
 import java.util.stream.Stream
 
 /**
@@ -13,20 +13,16 @@ import java.util.stream.Stream
  * @since 13/03/2019
  */
 open class DataSet
-	constructor(val id: Int = idGenerator.incrementAndGet(),
+	constructor(val id: String = UUID.randomUUID().toString(),
 				val attributes: List<Attribute>,
 				val classSize: Int)
 	: Iterable<Row>
 {
-	companion object {
-		private val log = LogManager.getLogger()
-		private val idGenerator = AtomicInteger(0)
-	}
+	companion object { private val log = LogManager.getLogger() }
 
 	/**
 	 * Construye un DataSet con el tamano especificado con todos los atributos
 	 * como numericos.
-	 *
 	 */
 	constructor(attSize: Int, classSize: Int):
 			this(attributes = List(attSize) { Attribute(AttributeType.NUMERICAL) },
@@ -37,17 +33,19 @@ open class DataSet
 	 */
 	private val rows: MutableList<Row> = mutableListOf()
 
-	val rowList get() = rows.toList()
+	val instances get() = rows.toList()
+
+	override fun iterator(): Iterator<Row> = instances.iterator()
 
 	/**
 	 * El numero de instancias de este DataSet
 	 */
-	val rowsSize: Int get() = rows.size
+	val instanceSize: Int get() = rows.size
 
 	/**
-	 * El numero de atributosd de este DataSet
+	 * El numero de atributos de este DataSet
 	 */
-	val attributesSize: Int = attributes.size
+	val attributeSize: Int = attributes.size
 
 	/**
 	 * Obtiene el i-esimo renglon de este DataSet. Es un operador pues de esta
@@ -65,7 +63,7 @@ open class DataSet
 	 * @param row El Row a agregar a este DataSet
 	 */
 	fun add(row: Row) : Boolean {
-		if (row.size() != attributesSize) return false
+		if (row.size() != attributeSize) return false
 		//if (!validClass(row.clazz)) return false
 
 		// TODO verificar los atributos nominales y los cache de min y max
@@ -109,8 +107,8 @@ open class DataSet
 	 * @return un arreglo de enteros con los maximos ordenes de magnitud
 	 */
 	private fun getMaxOrderMagnitude(): IntArray {
-		val j = IntArray(attributesSize)
-		for (i in 0 until attributesSize) {
+		val j = IntArray(attributeSize)
+		for (i in 0 until attributeSize) {
 			if (isNumerical(i)) {
 				var tenPower = 0
 				var n = absoluteMax[i]
@@ -133,8 +131,8 @@ open class DataSet
 	val maximum: Array<BigDecimal>
 	get() {
 		if (maxCache == null) {
-			maxCache = Array(attributesSize) { ZERO }
-			for (i in 0 until attributesSize)
+			maxCache = Array(attributeSize) { ZERO }
+			for (i in 0 until attributeSize)
 				if (isNumerical(i))
 					maxCache!![i] = getAttributeStream(i)
 							.max { o1, o2 -> o1.compareTo(o2) }
@@ -154,8 +152,8 @@ open class DataSet
 	val minimum: Array<BigDecimal>
 	get() {
 		if (minCache == null) {
-			minCache = Array(attributesSize) { ZERO }
-			for (i in 0 until attributesSize)
+			minCache = Array(attributeSize) { ZERO }
+			for (i in 0 until attributeSize)
 				if (isNumerical(i))
 					minCache!![i] = getAttributeStream(i)
 							.min { o1, o2 -> o1.compareTo(o2) }
@@ -172,8 +170,8 @@ open class DataSet
 	val standardDeviation: Array<BigDecimal>
 	get() {
 		if (stdDvnCache == null) {
-			stdDvnCache = Array(attributesSize) { ZERO }
-			for (i in 0 until attributesSize)
+			stdDvnCache = Array(attributeSize) { ZERO }
+			for (i in 0 until attributeSize)
 				if (isNumerical(i))
 					stdDvnCache!![i] = MathTools
 							.sqrt(getAttributeStream(i)
@@ -184,7 +182,7 @@ open class DataSet
 									.reduce(ZERO) { sum, augend -> sum.add(augend) }
 									.divide(BigDecimal(rows.size), Row.precision, RoundingMode.HALF_UP),
 									Row.precision)
-			log.info("Standard Deviation computed: ${stdDvnCache!!.contentToString()}")
+			log.info("Desviacion estandar calculada: {}", {stdDvnCache!!.contentToString()})
 		}
 		return stdDvnCache!!
 	}
@@ -196,13 +194,13 @@ open class DataSet
 	val average: Array<BigDecimal>
 	get() {
 		if (avgCache == null) {
-			avgCache = Array(attributesSize) { ZERO }
+			avgCache = Array(attributeSize) { ZERO }
 					.mapIndexed { i, _ ->
 						if (isNumerical(i)) averageAtAtribute(i)
 						else modeAtAttribute(i)
 					}
 					.toTypedArray()
-			log.debug("Average computed: ${avgCache!!.contentToString()}")
+			log.debug("Promedio calculado: {}", {avgCache!!.contentToString()})
 		}
 		return avgCache!!
 	}
@@ -225,7 +223,7 @@ open class DataSet
 	 * @return la moda del i-esimo atributo de este DataSet.
 	 */
 	private fun modeAtAttribute(n: Int): BigDecimal {
-		val columnValues = getAttributeStream(n).toArray<BigDecimal> { arrayOfNulls(rowsSize)}
+		val columnValues = getAttributeStream(n).toArray<BigDecimal> { arrayOfNulls(instanceSize)}
 		var mode = ZERO ; var maxCount = 0
 		var i = 0; var j: Int
 		while (i < columnValues.size) {
@@ -250,8 +248,8 @@ open class DataSet
 	val absoluteMax: Array<BigDecimal>
 	get() {
 		if (absMaxCache == null) {
-			absMaxCache = Array(attributesSize) { ZERO }
-			for (i in 0 until attributesSize)
+			absMaxCache = Array(attributeSize) { ZERO }
+			for (i in 0 until attributeSize)
 				if (isNumerical(i))
 					absMaxCache!![i] = getAttributeStream(i)
 							.map { it.abs() }
@@ -287,8 +285,6 @@ open class DataSet
 	 */
 	fun isNominal(a: Int): Boolean = AttributeType.NOMINAL == attributes[a].type
 
-	override fun iterator(): Iterator<Row> = rows.iterator()
-
 	/**
 	 * Representa este DataSet en un String
 	 * @return la representacion textual de este DataSet
@@ -296,7 +292,7 @@ open class DataSet
 	override fun toString(): String =
 			"DataSet{\n" +
 			"	rowSize=" + rows.size + "\n" +
-			"	attributeSize=" + attributesSize + "\n" +
+			"	attributeSize=" + attributeSize + "\n" +
 			"	classSize=" + classSize + "\n" +
 			"	atributes=" + attributes + "\n" +
 			"	rows={\n" +
@@ -317,5 +313,5 @@ open class DataSet
 		return true
 	}
 
-	override fun hashCode(): Int = id
+	override fun hashCode(): Int = id.hashCode()
 }
