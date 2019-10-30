@@ -29,15 +29,16 @@ class DataSetController
 
 	@GetMapping("/{id}/classes")
 	fun getClasses(@PathVariable id: String): ResponseEntity<Array<ClassDTO>> {
-		val ds = dataSetFileService.loadFromFile(id)
-		ds.minMax(BigDecimal.ZERO, BigDecimal.TEN)
+		val dataSet = dataSetFileService
+				.loadFromFile(id)
+				.apply { minMax(BigDecimal.ZERO, BigDecimal.TEN) }
 		return ResponseEntity
-				.ok(Array(ds.classSize) { i ->
+				.ok(Array(dataSet.classSize) { i ->
 					ClassDTO().apply {
 						name = i.toString()
-						data = ds.instances.stream()
+						data = dataSet.instances.stream()
 								.filter { it.clazz == i }
-								.map { it.values }
+								.map { it.data }
 								.collect(Collectors.toList())
 					}
 				})

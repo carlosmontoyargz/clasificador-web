@@ -2,4 +2,5 @@ server:
   port: 8080
 logging:
   level:
+    mx.buap.fcc.clasificador.model.DataSet: debug,
     mx.buap.fcc.clasificador.service.DataSetFileService: debug

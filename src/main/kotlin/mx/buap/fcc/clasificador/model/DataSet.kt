@@ -7,6 +7,7 @@ import java.math.BigDecimal.*
 import java.math.RoundingMode
 import java.util.*
 import java.util.stream.Stream
+import kotlin.collections.ArrayList
 
 /**
  * @author Carlos Montoya
@@ -16,7 +17,7 @@ open class DataSet
 	constructor(val id: String = UUID.randomUUID().toString(),
 				val attributes: List<Attribute>,
 				val classSize: Int)
-	: Iterable<Row>
+	: Iterable<Instance>
 {
 	companion object { private val log = LogManager.getLogger() }
 
@@ -29,13 +30,16 @@ open class DataSet
 				 classSize = classSize)
 
 	/**
-	 * Las lista de instancias de este DataSet
+	 * La lista mutable privada de instancias de este DataSet
 	 */
-	private val rows: MutableList<Row> = mutableListOf()
+	private val rows: MutableList<Instance> = mutableListOf()
 
+	/**
+	 * La lista publica de instancias de este DataSet
+	 */
 	val instances get() = rows.toList()
 
-	override fun iterator(): Iterator<Row> = instances.iterator()
+	override fun iterator(): Iterator<Instance> = instances.iterator()
 
 	/**
 	 * El numero de instancias de este DataSet
@@ -54,25 +58,62 @@ open class DataSet
 	 * @param i
 	 * @return el i-esimo renglon de este DataSet
 	 */
-	operator fun get(i: Int): Row = rows[i]
+	operator fun get(i: Int): Instance = rows[i]
 
 	/**
 	 * Agrega un Row a este DataSet, si el numero de columnas de ese Row
 	 * es igual al numero de columnas de este DataSet.
 	 *
-	 * @param row El Row a agregar a este DataSet
+	 * @param instance El Row a agregar a este DataSet
 	 */
-	fun add(row: Row) : Boolean {
-		if (row.size() != attributeSize) return false
+	fun add(instance: Instance) : Boolean {
+		if (instance.size() != attributeSize) return false
 		//if (!validClass(row.clazz)) return false
 
 		// TODO verificar los atributos nominales y los cache de min y max
-		rows.add(row)
-		row.setDataSet(this)
+		rows.add(instance)
+		instance.setDataSet(this)
 		return true
 	}
 
 	fun validClass(clazz: Int) = clazz in 0 until classSize
+
+	/**
+	 * Clasifica una nueva instancia en base al algoritmo kNN
+	 */
+	fun kNNClassification(k: Int, instance: Instance): Int? {
+		val nearestNeighbors = kNearestNeighbors(instance, k)
+		val counts: MutableMap<Int, Int> = mutableMapOf()
+		nearestNeighbors.forEach { nn ->
+			val clazz = nn.first.clazz
+			val c = counts[clazz]
+			if (c == null) counts[clazz] = 1
+			else counts[clazz] = c + 1
+		}
+		return counts.maxBy { it.value }?.key
+	}
+
+	/**
+	 * Encuentra los k vecinos mas cercanos, junto con sus distancias a la
+	 * instancia especificada
+	 */
+	private fun kNearestNeighbors(instance: Instance, k: Int): List<Pair<Instance, BigDecimal>> {
+		val neighbors: ArrayList<Pair<Instance, BigDecimal>> = arrayListOf()
+		instances.forEach { i ->
+			val distance = instance.distance(i)
+			if (neighbors.isEmpty())
+				neighbors.add(Pair(i, distance))
+			else if (distance < neighbors.last().second) {
+				var index = 0
+				while (distance > neighbors[index].second) index++
+				neighbors.add(index, Pair(i, distance))
+				if (neighbors.size > k) neighbors.removeAt(k)
+			}
+		}
+		log.debug("Vecinos cercanos encontrados:")
+		neighbors.forEach { log.debug("{}", it) }
+		return neighbors.toList();
+	}
 
 	/**
 	 * Normaliza este DataSet mediante el metodo min-max.
@@ -175,13 +216,10 @@ open class DataSet
 				if (isNumerical(i))
 					stdDvnCache!![i] = MathTools
 							.sqrt(getAttributeStream(i)
-									.map { v -> v
-											.subtract(average[i])
-											.pow(2)
-									}
+									.map { it.subtract(average[i]).pow(2) }
 									.reduce(ZERO) { sum, augend -> sum.add(augend) }
-									.divide(BigDecimal(rows.size), Row.precision, RoundingMode.HALF_UP),
-									Row.precision)
+									.divide(BigDecimal(rows.size), Instance.precision, RoundingMode.HALF_UP),
+									Instance.precision)
 			log.info("Desviacion estandar calculada: {}", {stdDvnCache!!.contentToString()})
 		}
 		return stdDvnCache!!
@@ -215,7 +253,7 @@ open class DataSet
 			if (rows.size == 0) ZERO
 			else getAttributeStream(i)
 					.reduce(ZERO) { sum, augend -> sum.add(augend) }
-					.divide(BigDecimal(rows.size), Row.precision, RoundingMode.HALF_UP)
+					.divide(BigDecimal(rows.size), Instance.precision, RoundingMode.HALF_UP)
 
 	/**
 	 * Calcula la moda del i-esimo atributo de este DataSet.
@@ -295,10 +333,10 @@ open class DataSet
 			"	attributeSize=" + attributeSize + "\n" +
 			"	classSize=" + classSize + "\n" +
 			"	atributes=" + attributes + "\n" +
-			"	rows={\n" +
+			"	instances={\n" +
 					StringBuilder()
-							.apply { rows.forEach {
-								r -> this.append("		").append(r).append("\n") } }
+							.apply { instances.forEach {
+								r -> this.append("\t\t").append(r).append("\n") } }
 							.toString() +
 			"	}\n" +
 			"}"

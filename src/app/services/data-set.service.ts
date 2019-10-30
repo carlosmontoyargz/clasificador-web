@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core'
 import {HttpClient} from "@angular/common/http";
-import {Clazz} from "../models/Clazz";
+import {Clazz} from "../models/clazz";
 import {environment} from "../../environments/environment";
 
 @Injectable({providedIn:'root'})

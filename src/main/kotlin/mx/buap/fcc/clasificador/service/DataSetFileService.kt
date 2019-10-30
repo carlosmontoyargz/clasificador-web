@@ -1,7 +1,7 @@
 package mx.buap.fcc.clasificador.service
 
 import mx.buap.fcc.clasificador.model.DataSet
-import mx.buap.fcc.clasificador.model.Row
+import mx.buap.fcc.clasificador.model.Instance
 import org.apache.logging.log4j.LogManager
 import org.springframework.stereotype.Service
 import java.io.File
@@ -38,8 +38,8 @@ class DataSetFileService
 			val classSize =
 					if (lineItr.hasNext()) lineItr.next().split(delimiter)[0].toInt()
 					else throw IOException("No se especifico el numero de clases")
-			log.debug("{} {} {}", rowSize, attSize, classSize)
 
+			//log.debug("{} {} {}", rowSize, attSize, classSize)
 			/*val attributes: List<String> = iterator.next().split(delimiter)
 			if (attributes.size != attSize)
 				throw IOException("No se especifico correctamente el numero de atributos")*/
@@ -52,8 +52,8 @@ class DataSetFileService
 								throw IOException("No se especifico correctamente el numero de renglones")
 
 							val columnItr = lineItr.next().split(delimiter).iterator()
-							add(Row(indice = i,
-									values = Array(attSize) { BigDecimal(columnItr.next()) },
+							add(Instance(indice = i,
+									data = Array(attSize) { BigDecimal(columnItr.next()) },
 									clazz = columnItr.next().toInt()))
 						}
 					}

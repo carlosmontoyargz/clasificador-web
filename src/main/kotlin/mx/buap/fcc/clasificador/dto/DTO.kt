@@ -8,7 +8,7 @@ open class DataSetDTO {
 	var attributeSize: Int = 0
 	var classSize: Int = 0
 	var attributes: List<AttributeDTO> = emptyList()
-	var instances: List<RowDTO> = emptyList()
+	var instances: List<InstanceDTO> = emptyList()
 }
 
 open class AttributeDTO {
@@ -16,10 +16,10 @@ open class AttributeDTO {
 	var size: Int = 0
 }
 
-open class RowDTO {
+open class InstanceDTO {
 	var indice: Int = 0
 	var clazz: Int = 0
-	var values: Array<BigDecimal> = emptyArray()
+	var data: Array<BigDecimal> = emptyArray()
 }
 
 open class ClassDTO {

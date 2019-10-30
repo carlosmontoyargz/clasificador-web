@@ -92,11 +92,10 @@ export class DashboardComponent implements OnInit {
     this.dataSetService
       .getClasses('seg-data.txt')
       .subscribe(
-        data => {
+        classes => {
           console.log('Se han descargado las clases');
-          console.log(data);
-
-          data.forEach(d => this.options.series.push(d));
+          console.log(classes);
+          classes.forEach(c => this.options.series.push(c));
           this.inicializarChart()
         },
         error => {
