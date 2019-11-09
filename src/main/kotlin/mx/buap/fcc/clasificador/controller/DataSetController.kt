@@ -36,6 +36,7 @@ class DataSetController
 				.ok(Array(dataSet.classSize) { i ->
 					ClassDTO().apply {
 						name = i.toString()
+						attributeSize = dataSet.attributeSize
 						data = dataSet.instances.stream()
 								.filter { it.clazz == i }
 								.map { it.data }

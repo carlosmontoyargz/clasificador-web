@@ -8,23 +8,41 @@
         </div><!--/.col-->
         <div class="col-sm-7 d-none d-md-block">
           <button type="button" class="btn btn-primary float-right"><i class="icon-cloud-download"></i></button>
-          <!--<div class="btn-group btn-group-toggle float-right mr-3" data-toggle="buttons">
-            <label class="btn btn-outline-secondary" [(ngModel)]="radioModel" btnRadio="Day" id="option1">Day</label>
-            <label class="btn btn-outline-secondary" [(ngModel)]="radioModel" btnRadio="Month" id="option2">Month</label>
-            <label class="btn btn-outline-secondary" [(ngModel)]="radioModel" btnRadio="Year" id="option3">Year</label>
-          </div>-->
         </div><!--/.col-->
       </div><!--/.row-->
-      <!--<div class="chart-wrapper" style="height:300px;margin-top:40px;">
-        <canvas baseChart class="chart"
-        [datasets]="mainChartData"
-        [labels]="mainChartLabels"
-        [options]="mainChartOptions"
-        [colors]="mainChartColours"
-        [legend]="mainChartLegend"
-        [chartType]="mainChartType"></canvas>
-      </div>-->
-      <div id="container" style="height:700px;margin-top:40px;">prueba</div>
+      <br>
+      <div class="form-group row">
+        <div class="col-md-3">
+          <label for="selectx">Eje X</label>
+          <select [(ngModel)]="xAxis" id="selectx" name="selectx" class="form-control">
+            <option [value]="a" *ngFor="let a of attributes">{{a}}</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="selecty">Eje Y</label>
+          <select [(ngModel)]="yAxis" id="selecty" name="selecty" class="form-control">
+            <option [value]="a" *ngFor="let a of attributes">{{a}}</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="selectz">Eje Z</label>
+          <select [(ngModel)]="zAxis" id="selectz" name="selectz" class="form-control">
+            <option [value]="a" *ngFor="let a of attributes">{{a}}</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="selectz"></label>
+          <button type="button" class="btn btn-block btn-primary" (click)="dibujarGrafica()">Dibujar grafica</button>
+        </div>
+        <!--<label class="col-sm-2 col-form-label" for="select1">Eje Z</label>
+        <div class="col-md-2">
+          <select id="select3" name="select1" class="form-control">
+            <option value="0">Selecciona una opcion</option>
+            <option value="1">1</option>
+          </select>
+        </div>-->
+      </div>
+      <div id="container" style="height:700px;margin-top:40px;">Scatter Plot</div>
     </div>
     <div class="card-footer">
       <div class="row text-center">

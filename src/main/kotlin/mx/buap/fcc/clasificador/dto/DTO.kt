@@ -24,5 +24,6 @@ open class InstanceDTO {
 
 open class ClassDTO {
 	var name: String = ""
+	var attributeSize: Int = 0
 	var data: List<Array<BigDecimal>> = emptyList()
 }
