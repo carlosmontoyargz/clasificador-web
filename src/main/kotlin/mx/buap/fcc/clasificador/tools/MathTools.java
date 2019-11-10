@@ -9,13 +9,11 @@ import java.math.RoundingMode;
  */
 public class MathTools
 {
-	public static BigDecimal sqrt(BigDecimal A, final int precision)
-	{
+	public static BigDecimal sqrt(BigDecimal A, final int precision) {
 		BigDecimal x0 = BigDecimal.ZERO;
 		BigDecimal x1 = new BigDecimal(Math.sqrt(A.doubleValue()));
 		BigDecimal TWO = new BigDecimal(2);
-		while (!x0.equals(x1))
-		{
+		while (!x0.equals(x1)) {
 			x0 = x1;
 			x1 = A.divide(x0, precision, RoundingMode.HALF_UP);
 			x1 = x1.add(x0);

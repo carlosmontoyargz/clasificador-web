@@ -58,7 +58,7 @@ export class DashboardComponent implements OnInit {
       }
     },
   };
-  public softCharOptions: any = {
+  public suavizadaChartOptions: any = {
     title : { text: 'Dataset suavizado' },
     series : [], // Los datos de la grafica en objetos { name: 'Name', data: [[1, 6, 5], [8, 7, 9]] }
     xAxis: { min:-2, max:2 },
@@ -137,9 +137,9 @@ export class DashboardComponent implements OnInit {
         ])
       })
     );
-    this.softCharOptions.series = [];
+    this.suavizadaChartOptions.series = [];
     this.analysisResult.suavizado.classes.forEach(c =>
-      this.softCharOptions.series.push({
+      this.suavizadaChartOptions.series.push({
         name: c.name,
         data: c.data.map(a => [
           a[this.plottedAttributes.x],
@@ -192,8 +192,8 @@ export class DashboardComponent implements OnInit {
     Highcharts.addEvent(originalChart.container, 'touchstart', dragStart);
 
     console.log("Opciones de grafica suavizada");
-    console.log(this.softCharOptions);
-    let softChart = Highcharts.chart('container2', this.softCharOptions);
+    console.log(this.suavizadaChartOptions);
+    let softChart = Highcharts.chart('container2', this.suavizadaChartOptions);
     let dragStart2 = eStart => {
       eStart = softChart.pointer.normalize(eStart);
 

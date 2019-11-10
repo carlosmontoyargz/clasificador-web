@@ -7,12 +7,6 @@ import {environment} from "../../environments/environment";
 export class DataSetService {
   constructor(private httpClient: HttpClient) {}
 
-  getClasses(id: string) {
-    return this.httpClient
-      .get<Array<Clazz>>(
-        `${environment.apiUrl}/dataset/${id}/classes`)
-  }
-
   performAnalysis(id: string) {
     return this.httpClient
       .get<AnalysisResult>(
