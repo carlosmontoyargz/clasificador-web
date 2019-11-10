@@ -21,6 +21,10 @@ noData(Highcharts);
 })
 export class DashboardComponent implements OnInit {
 
+  public analysisResult: AnalysisResult;
+  public attributes: number[];
+  public plottedAttributes = { x: 0, y: 1, z: 2 };
+
   public originalCharOptions: any = {
     title : { text: 'Dataset original' },
     series : [], // Los datos de la grafica en objetos { name: 'Name', data: [[1, 6, 5], [8, 7, 9]] }
@@ -54,10 +58,39 @@ export class DashboardComponent implements OnInit {
       }
     },
   };
-
-  public analysisResult: AnalysisResult;
-  public attributes: number[];
-  public plottedAttributes = { x: 0, y: 1, z: 2 };
+  public softCharOptions: any = {
+    title : { text: 'Dataset suavizado' },
+    series : [], // Los datos de la grafica en objetos { name: 'Name', data: [[1, 6, 5], [8, 7, 9]] }
+    xAxis: { min:-2, max:2 },
+    yAxis: { min:-2, max:2 },
+    zAxis: { min:-2, max:2 },
+    chart: {
+      type: 'scatter',
+      marginBottom: 100,
+      marginRight: 50,
+      options3d: {
+        enabled: true,
+        alpha: 20,
+        beta: 30,
+        depth: 750,
+        viewDistance: 7,
+        frame:{
+          bottom :{
+            size: 1,
+            color: 'rgba(0, 0, 0, 0.02)'
+          },
+          back :{
+            size: 1,
+            color: 'rgba(0, 0, 0, 0.04)'
+          },
+          side :{
+            size: 1,
+            color: 'rgba(0, 0, 0, 0.06)'
+          }
+        }
+      }
+    },
+  };
 
   constructor(private dataSetService: DataSetService) {}
 
@@ -93,10 +126,20 @@ export class DashboardComponent implements OnInit {
    * obtenido de la API, con los atributos a graficar especificados.
    */
   private dibujarGrafica() {
-    console.log(`X axis: ${this.plottedAttributes.x}, Y axis: ${this.plottedAttributes.y}, Z axis: ${this.plottedAttributes.z}`);
     this.originalCharOptions.series = [];
     this.analysisResult.original.classes.forEach(c =>
       this.originalCharOptions.series.push({
+        name: c.name,
+        data: c.data.map(a => [
+          a[this.plottedAttributes.x],
+          a[this.plottedAttributes.y],
+          a[this.plottedAttributes.z]
+        ])
+      })
+    );
+    this.softCharOptions.series = [];
+    this.analysisResult.suavizado.classes.forEach(c =>
+      this.softCharOptions.series.push({
         name: c.name,
         data: c.data.map(a => [
           a[this.plottedAttributes.x],
@@ -112,24 +155,22 @@ export class DashboardComponent implements OnInit {
    * Configura las Highcharts y los eventos de movimiento y las renderiza en la vista.
    */
   private drawHighcharts() {
-    console.log("Original chart options");
+    console.log("Opciones de grafica original");
     console.log(this.originalCharOptions);
-    let chart = Highcharts.chart('container', this.originalCharOptions);
+    let originalChart = Highcharts.chart('container', this.originalCharOptions);
     let dragStart = eStart => {
-      eStart = chart.pointer.normalize(eStart);
+      eStart = originalChart.pointer.normalize(eStart);
 
       let posX = eStart.chartX,
         posY = eStart.chartY,
-        alpha = chart.options.chart.options3d.alpha,
-        beta = chart.options.chart.options3d.beta,
-        sensitivity = 4,  // lower is more sensitive
+        alpha = originalChart.options.chart.options3d.alpha,
+        beta = originalChart.options.chart.options3d.beta,
+        sensitivity = 5,  // lower is more sensitive
         handlers = [];
 
-      function drag(e) {
-        // Get e.chartX and e.chartY
-        e = chart.pointer.normalize(e);
-
-        chart.update({
+      let drag = (e) => {
+        e = originalChart.pointer.normalize(e); // Get e.chartX and e.chartY
+        originalChart.update({
           chart: {
             options3d: {
               alpha: alpha + (e.chartY - posY) / sensitivity,
@@ -137,17 +178,53 @@ export class DashboardComponent implements OnInit {
             }
           }
         }, undefined, undefined, false);
-      }
+      };
       handlers.push(Highcharts.addEvent(document, 'mousemove', drag));
       handlers.push(Highcharts.addEvent(document, 'touchmove', drag));
-      function unbindAll() {
+      let unbindAll = () => {
         handlers.forEach(function (unbind) {if (unbind) {unbind();}});
         handlers.length = 0;
-      }
+      };
       handlers.push(Highcharts.addEvent(document, 'mouseup', unbindAll));
       handlers.push(Highcharts.addEvent(document, 'touchend', unbindAll));
     };
-    Highcharts.addEvent(chart.container, 'mousedown', dragStart);
-    Highcharts.addEvent(chart.container, 'touchstart', dragStart);
+    Highcharts.addEvent(originalChart.container, 'mousedown', dragStart);
+    Highcharts.addEvent(originalChart.container, 'touchstart', dragStart);
+
+    console.log("Opciones de grafica suavizada");
+    console.log(this.softCharOptions);
+    let softChart = Highcharts.chart('container2', this.softCharOptions);
+    let dragStart2 = eStart => {
+      eStart = softChart.pointer.normalize(eStart);
+
+      let posX = eStart.chartX,
+        posY = eStart.chartY,
+        alpha = originalChart.options.chart.options3d.alpha,
+        beta = originalChart.options.chart.options3d.beta,
+        sensitivity = 5,  // lower is more sensitive
+        handlers = [];
+
+      let drag = (e) => {
+        e = softChart.pointer.normalize(e); // Get e.chartX and e.chartY
+        softChart.update({
+          chart: {
+            options3d: {
+              alpha: alpha + (e.chartY - posY) / sensitivity,
+              beta: beta + (posX - e.chartX) / sensitivity
+            }
+          }
+        }, undefined, undefined, false);
+      };
+      handlers.push(Highcharts.addEvent(document, 'mousemove', drag));
+      handlers.push(Highcharts.addEvent(document, 'touchmove', drag));
+      let unbindAll = () => {
+        handlers.forEach(function (unbind) {if (unbind) {unbind();}});
+        handlers.length = 0;
+      };
+      handlers.push(Highcharts.addEvent(document, 'mouseup', unbindAll));
+      handlers.push(Highcharts.addEvent(document, 'touchend', unbindAll));
+    };
+    Highcharts.addEvent(originalChart.container, 'mousedown', dragStart2);
+    Highcharts.addEvent(originalChart.container, 'touchstart', dragStart2);
   }
 }

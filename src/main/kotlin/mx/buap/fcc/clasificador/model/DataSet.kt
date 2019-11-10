@@ -32,19 +32,19 @@ open class DataSet
 	/**
 	 * La lista mutable privada de instancias de este DataSet
 	 */
-	private val rows: MutableList<Instance> = mutableListOf()
+	private val mtInstances: MutableList<Instance> = mutableListOf()
 
 	/**
 	 * La lista inmutable publica de instancias de este DataSet
 	 */
-	val instances get() = rows.toList()
+	val instances get() = mtInstances.toList()
 
 	override fun iterator(): Iterator<Instance> = instances.iterator()
 
 	/**
 	 * El numero de instancias de este DataSet
 	 */
-	val instanceSize: Int get() = rows.size
+	val instanceSize: Int get() = mtInstances.size
 
 	/**
 	 * El numero de atributos de este DataSet
@@ -58,7 +58,7 @@ open class DataSet
 	 * @param i
 	 * @return el i-esimo renglon de este DataSet
 	 */
-	operator fun get(i: Int): Instance = rows[i]
+	operator fun get(i: Int): Instance = mtInstances[i]
 
 	/**
 	 * Agrega un Row a este DataSet, si el numero de columnas de ese Row
@@ -71,7 +71,7 @@ open class DataSet
 		//if (!validClass(row.clazz)) return false
 
 		// TODO verificar los atributos nominales y los cache de min y max
-		rows.add(instance)
+		mtInstances.add(instance)
 		instance.setDataSet(this)
 		return true
 	}
@@ -79,40 +79,66 @@ open class DataSet
 	fun validClass(clazz: Int) = clazz in 0 until classSize
 
 	/**
-	 * Clasifica una nueva instancia en base al algoritmo kNN
+	 * Clasifica una instancia en base al algoritmo kNN. Primero encuentra
+	 * los vecinos mas cercanos y retorna la clase mas votada entre ellos.
+	 *
+	 * @param k el numero de vecinos a encontrar.
+	 * @param instance la instancia a clasificar.
 	 */
 	fun kNNClassification(k: Int, instance: Instance): Int? {
-		val nearestNeighbors = kNearestNeighbors(instance, k)
-		val counts: MutableMap<Int, Int> = mutableMapOf()
-		nearestNeighbors.forEach { nn ->
-			val clazz = nn.first.clazz
-			val c = counts[clazz]
-			if (c == null) counts[clazz] = 1
-			else counts[clazz] = c + 1
+		val nearestNeighbors = findNearestNeighbors(instance, k)
+		val votes: MutableMap<Int, Int> = mutableMapOf()
+		nearestNeighbors.forEach { neighbor ->
+			val clazz = neighbor.instance.clazz
+			val c = votes[clazz]
+			votes[clazz] = if (c == null) 1 else c + 1
 		}
-		return counts.maxBy { it.value }?.key
+		return votes.maxBy { it.value }?.key
 	}
 
 	/**
 	 * Encuentra los k vecinos mas cercanos, junto con sus distancias a la
 	 * instancia especificada
 	 */
-	private fun kNearestNeighbors(instance: Instance, k: Int): List<Pair<Instance, BigDecimal>> {
-		val neighbors: ArrayList<Pair<Instance, BigDecimal>> = arrayListOf()
+	private fun findNearestNeighbors(instance: Instance, k: Int): List<Neighbor>
+	{
+		val neighbors: ArrayList<Neighbor> = arrayListOf()
 		instances.forEach { i ->
 			val distance = instance.distance(i)
 			if (neighbors.isEmpty())
-				neighbors.add(Pair(i, distance))
-			else if (distance < neighbors.last().second) {
+				neighbors.add(Neighbor(i, distance))
+			else if (distance < neighbors.last().distance) {
 				var index = 0
-				while (distance > neighbors[index].second) index++
-				neighbors.add(index, Pair(i, distance))
+				while (distance > neighbors[index].distance) index++
+				neighbors.add(index, Neighbor(i, distance))
 				if (neighbors.size > k) neighbors.removeAt(k)
 			}
 		}
-		log.debug("Vecinos cercanos encontrados:")
-		neighbors.forEach { log.debug("{}", it) }
-		return neighbors.toList();
+		log.trace("Vecinos cercanos encontrados: {}", neighbors)
+		return neighbors
+	}
+
+	/**
+	 * Elimina las instancias en las que la clase predicha por el clasificador
+	 * k-NN es distinta de la clase real de la instancia.
+	 *
+	 * @param k el numero de vecinos cercanos.
+	 */
+	fun wilsonEditig(k: Int) {
+		var done = false
+		while (!done) {
+			done = true
+			log.debug("Comienza proceso de suavizado de fronteras")
+			val itrt = mtInstances.iterator()
+			while (itrt.hasNext()) {
+				val instance = itrt.next()
+				if (instance.clazz != kNNClassification(k, instance)) {
+					itrt.remove(); done = false
+					log.debug("Instancia removida: {}", instance)
+				}
+			}
+		}
+		log.debug("Termina el proceso de suavizado de fronteras")
 	}
 
 	/**
@@ -122,14 +148,14 @@ open class DataSet
 	 * @param newMax el nuevo maximo para todas las columnas
 	 */
 	fun minMax(newMin: BigDecimal, newMax: BigDecimal) {
-		rows.forEach { row -> row.minmax(newMin, newMax) }
+		mtInstances.forEach { row -> row.minmax(newMin, newMax) }
 	}
 
 	/**
 	 * Normaliza este DataSet mediante el metodo Z-Score.
 	 *
 	 */
-	fun zScore() { rows.forEach { row -> row.zScore() } }
+	fun zScore() { mtInstances.forEach { row -> row.zScore() } }
 
 	/**
 	 * Normaliza este DataSet mediante el metodo decimal-scaling.
@@ -137,7 +163,7 @@ open class DataSet
 	 */
 	fun decimalScaling() {
 		val maxOrderMagnitude = getMaxOrderMagnitude()
-		rows.forEach { row -> row.decimalScaling(maxOrderMagnitude) }
+		mtInstances.forEach { row -> row.decimalScaling(maxOrderMagnitude) }
 	}
 
 	/**
@@ -218,9 +244,9 @@ open class DataSet
 							.sqrt(getAttributeStream(i)
 									.map { it.subtract(average[i]).pow(2) }
 									.reduce(ZERO) { sum, augend -> sum.add(augend) }
-									.divide(BigDecimal(rows.size), Instance.precision, RoundingMode.HALF_UP),
+									.divide(BigDecimal(mtInstances.size), Instance.precision, RoundingMode.HALF_UP),
 									Instance.precision)
-			log.info("Desviacion estandar calculada: {}", {stdDvnCache!!.contentToString()})
+			log.info("Desviacion estandar calculada: {}", stdDvnCache!!.contentToString())
 		}
 		return stdDvnCache!!
 	}
@@ -238,7 +264,7 @@ open class DataSet
 						else modeAtAttribute(i)
 					}
 					.toTypedArray()
-			log.debug("Promedio calculado: {}", {avgCache!!.contentToString()})
+			log.debug("Promedio calculado: {}", avgCache!!.contentToString())
 		}
 		return avgCache!!
 	}
@@ -250,10 +276,10 @@ open class DataSet
 	 * @return el promedio del i-esimo atributo de este DataSet.
 	 */
 	private fun averageAtAtribute(i: Int): BigDecimal =
-			if (rows.size == 0) ZERO
+			if (mtInstances.size == 0) ZERO
 			else getAttributeStream(i)
 					.reduce(ZERO) { sum, augend -> sum.add(augend) }
-					.divide(BigDecimal(rows.size), Instance.precision, RoundingMode.HALF_UP)
+					.divide(BigDecimal(mtInstances.size), Instance.precision, RoundingMode.HALF_UP)
 
 	/**
 	 * Calcula la moda del i-esimo atributo de este DataSet.
@@ -305,7 +331,7 @@ open class DataSet
 	 * @param a posicion del atributo
 	 * @return un Stream con los valores de un atributo especifico.
 	 */
-	fun getAttributeStream(a: Int): Stream<BigDecimal> = rows.stream().map { row -> row[a] }
+	fun getAttributeStream(a: Int): Stream<BigDecimal> = mtInstances.stream().map { row -> row[a] }
 
 	/**
 	 * Retorna true si la columna especificada es atributo de tipo numerico.
@@ -329,7 +355,7 @@ open class DataSet
 	 */
 	override fun toString(): String =
 			"DataSet{\n" +
-			"	rowSize=" + rows.size + "\n" +
+			"	rowSize=" + mtInstances.size + "\n" +
 			"	attributeSize=" + attributeSize + "\n" +
 			"	classSize=" + classSize + "\n" +
 			"	atributes=" + attributes + "\n" +

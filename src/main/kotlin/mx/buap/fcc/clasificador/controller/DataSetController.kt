@@ -61,7 +61,7 @@ class DataSetController
 		// Retorna el resultado de la clasificacion y suavizado
 		return ResponseEntity.ok(ClassificationResult().apply {
 			original = dataSetToClassesDTO(ds)
-			suavizado = null
+			suavizado = dataSetToClassesDTO(ds.apply { wilsonEditig(7) })
 		})
 	}
 
@@ -83,7 +83,7 @@ class DataSetController
 		}
 	}
 
-	@GetMapping("/{id}/classes")
+	/*@GetMapping("/{id}/classes")
 	fun getClasses(@PathVariable id: String): ResponseEntity<Array<ClassDTO>> {
 		val dataSet = dataSetFileService
 				.loadFromFile(id)
@@ -98,5 +98,5 @@ class DataSetController
 								.collect(Collectors.toList())
 					}
 				})
-	}
+	}*/
 }
