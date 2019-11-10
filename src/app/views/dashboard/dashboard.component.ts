@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import * as Highcharts from 'highcharts';
 import highcharts3D from 'highcharts/highcharts-3d.src';
 import {DataSetService} from "../../services/data-set.service";
-import {Clazz} from "../../models/clazz";
+import {AnalysisResult, Clazz} from "../../models/clazz";
 highcharts3D(Highcharts);
 
 declare var require: any;
@@ -21,7 +21,12 @@ noData(Highcharts);
 })
 export class DashboardComponent implements OnInit {
 
-  public options: any = {
+  public originalCharOptions: any = {
+    title : { text: 'Dataset original' },
+    series : [], // Los datos de la grafica en objetos { name: 'Name', data: [[1, 6, 5], [8, 7, 9]] }
+    xAxis: { min:-2, max:2 },
+    yAxis: { min:-2, max:2 },
+    zAxis: { min:-2, max:2 },
     chart: {
       type: 'scatter',
       marginBottom: 100,
@@ -30,7 +35,7 @@ export class DashboardComponent implements OnInit {
         enabled: true,
         alpha: 20,
         beta: 30,
-        depth: 650,
+        depth: 750,
         viewDistance: 7,
         frame:{
           bottom :{
@@ -48,74 +53,68 @@ export class DashboardComponent implements OnInit {
         }
       }
     },
-    title : {
-      text: '3D Scatter Plot'
-    },
-    xAxis:{
-      min:0,
-      max:10
-    },
-    yAxis:{
-      min:0,
-      max:10
-    },
-    zAxis:{
-      min:0,
-      ax:10
-    },
-    series : []
-    /*[{
-      name: 'Reading',
-      data: [[1, 6, 5], [8, 7, 9]]
-    }]*/
   };
 
-  public clases: Clazz[];
+  public analysisResult: AnalysisResult;
   public attributes: number[];
-
-  public xAxis = 0;
-  public yAxis = 1;
-  public zAxis = 2;
+  public plottedAttributes = { x: 0, y: 1, z: 2 };
 
   constructor(private dataSetService: DataSetService) {}
 
   ngOnInit(): void {
     this.dataSetService
-      .getClasses('seg-data.txt')
+      .performAnalysis('seg-data.txt')
       .subscribe(
-        clases => {
-          console.log('Se han descargado las clases');
-          console.log(clases);
-          this.clases = clases;
-          this.asignarAtributos(clases.pop().attributeSize);
+        result => {
+          console.log('Se ha descargado el resultado del analisis');
+          console.log(result);
+          this.analysisResult = result;
+          this.asignarAtributos(result.original.attributeSize);
           this.dibujarGrafica()
         },
         error => {
           console.log(`Ocurrio un error al descargar las clases`);
           console.log(error)
-        });
+        }
+      );
   }
 
+  /**
+   * Asigna la lista con los nombres de los atributos disponibles a graficar.
+   *
+   */
   private asignarAtributos(n: number) {
     this.attributes = [];
     for (let i = 0; i < n; i++) this.attributes.push(i);
   }
 
+  /**
+   * Dibuja las graficas scatter plot con el contenido del resultado del analisis
+   * obtenido de la API, con los atributos a graficar especificados.
+   */
   private dibujarGrafica() {
-    /* Convierte el conjunto de clases descargado desde la API, a una estructura
-    para el componente del scatter plot, de acuerdo a la seleccion de atributos
-    a graficar*/
-    console.log(this.xAxis);
-    console.log(this.yAxis);
-    console.log(this.zAxis);
-    this.options.series = [];
-    this.clases.forEach(c => this.options.series.push({
-      name: c.name,
-      data: c.data.map(a => [a[this.xAxis], a[this.yAxis], a[this.zAxis]])
-    }));
+    console.log(`X axis: ${this.plottedAttributes.x}, Y axis: ${this.plottedAttributes.y}, Z axis: ${this.plottedAttributes.z}`);
+    this.originalCharOptions.series = [];
+    this.analysisResult.original.classes.forEach(c =>
+      this.originalCharOptions.series.push({
+        name: c.name,
+        data: c.data.map(a => [
+          a[this.plottedAttributes.x],
+          a[this.plottedAttributes.y],
+          a[this.plottedAttributes.z]
+        ])
+      })
+    );
+    this.drawHighcharts();
+  }
 
-    // Dibuja la grafica
-    let chart = Highcharts.chart('container', this.options);
+  /**
+   * Configura las Highcharts y los eventos de movimiento y las renderiza en la vista.
+   */
+  private drawHighcharts() {
+    console.log("Original chart options");
+    console.log(this.originalCharOptions);
+    let chart = Highcharts.chart('container', this.originalCharOptions);
     let dragStart = eStart => {
       eStart = chart.pointer.normalize(eStart);
 

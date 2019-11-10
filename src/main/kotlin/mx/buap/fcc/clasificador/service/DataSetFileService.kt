@@ -13,12 +13,12 @@ class DataSetFileService
 {
 	companion object {
 		const val delimiter = ",";
-		const val basePath = "csv-samples" ;
+		const val basePath = "csv-samples"
 		private val log = LogManager.getLogger()
 	}
 
 	/**
-	 * Crea un DataSet a partir de un archivo CSV apuntado por el filaname.
+	 * Crea un DataSet a partir de un archivo CSV apuntado por el filename.
 	 *
 	 * @param filename El filename del archivo csv a cargar
 	 * @return El DataSet creado

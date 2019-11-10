@@ -22,8 +22,17 @@ open class InstanceDTO {
 	var data: Array<BigDecimal> = emptyArray()
 }
 
+open class ClassesDTO {
+	var attributeSize: Int = 0
+	var classes: Array<ClassDTO> = emptyArray()
+}
+
 open class ClassDTO {
 	var name: String = ""
-	var attributeSize: Int = 0
 	var data: List<Array<BigDecimal>> = emptyList()
+}
+
+open class ClassificationResult {
+	var original: ClassesDTO? = null
+	var suavizado: ClassesDTO? = null
 }

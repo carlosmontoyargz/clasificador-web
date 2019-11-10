@@ -14,19 +14,19 @@
       <div class="form-group row">
         <div class="col-md-3">
           <label for="selectx">Eje X</label>
-          <select [(ngModel)]="xAxis" id="selectx" name="selectx" class="form-control">
+          <select [(ngModel)]="plottedAttributes.x" id="selectx" name="selectx" class="form-control">
             <option [value]="a" *ngFor="let a of attributes">{{a}}</option>
           </select>
         </div>
         <div class="col-md-3">
           <label for="selecty">Eje Y</label>
-          <select [(ngModel)]="yAxis" id="selecty" name="selecty" class="form-control">
+          <select [(ngModel)]="plottedAttributes.y" id="selecty" name="selecty" class="form-control">
             <option [value]="a" *ngFor="let a of attributes">{{a}}</option>
           </select>
         </div>
         <div class="col-md-3">
           <label for="selectz">Eje Z</label>
-          <select [(ngModel)]="zAxis" id="selectz" name="selectz" class="form-control">
+          <select [(ngModel)]="plottedAttributes.z" id="selectz" name="selectz" class="form-control">
             <option [value]="a" *ngFor="let a of attributes">{{a}}</option>
           </select>
         </div>

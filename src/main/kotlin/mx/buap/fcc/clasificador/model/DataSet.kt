@@ -35,7 +35,7 @@ open class DataSet
 	private val rows: MutableList<Instance> = mutableListOf()
 
 	/**
-	 * La lista publica de instancias de este DataSet
+	 * La lista inmutable publica de instancias de este DataSet
 	 */
 	val instances get() = rows.toList()
 
@@ -53,7 +53,7 @@ open class DataSet
 
 	/**
 	 * Obtiene el i-esimo renglon de este DataSet. Es un operador pues de esta
-	 * forma es posible invocar la funcion como notacion de arrays.
+	 * forma es posible invocar la funcion como notacion de arrays (dataSet[i]).
 	 *
 	 * @param i
 	 * @return el i-esimo renglon de este DataSet
