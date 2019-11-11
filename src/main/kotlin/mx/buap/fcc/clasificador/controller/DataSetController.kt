@@ -49,6 +49,7 @@ class DataSetController
 	@GetMapping("/{id}/performAnalysis")
 	fun performAnalysis(@PathVariable id: String,
 						@RequestParam normalizacion: NormalizationMethod?,
+						@RequestParam(required = false, defaultValue = "7") k: Int,
 						@RequestParam(required = false, defaultValue = "7") folds: Int)
 			: ResponseEntity<ClassificationResult>
 	{

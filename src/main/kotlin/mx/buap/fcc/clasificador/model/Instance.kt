@@ -51,8 +51,7 @@ class Instance
 	 * Normaliza este DataRow mediante el metodo min-max, a partir de los parametros especificados.
 	 *
 	 */
-	fun minmax(newMin: BigDecimal, newMax: BigDecimal)
-	{
+	fun minmax(newMin: BigDecimal, newMax: BigDecimal) {
 		val diffNewMinNewMax = newMax - newMin
 		for (i in data.indices) {
 			val diffMinMax = dataSet!!.maximum[i] - dataSet!!.minimum[i]

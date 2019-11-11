@@ -12,7 +12,6 @@ export class Classes {
   classes: Clazz[]
 }
 
-
 export class Clazz {
   name: string;
   data: number[][]

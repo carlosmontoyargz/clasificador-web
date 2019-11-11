@@ -7,13 +7,13 @@ import {environment} from "../../environments/environment";
 export class DataSetService {
   constructor(private httpClient: HttpClient) {}
 
-  performAnalysis(id: string) {
+  performAnalysis(id: string, norm: string) {
     return this.httpClient
       .get<AnalysisResult>(
         `${environment.apiUrl}/dataset/${id}/performAnalysis`,
         {
           params: {
-            'normalizacion': 'Z_SCORE'
+            'normalizacion': norm
           }
         })
   }

@@ -39,12 +39,6 @@ class DataSetFileService
 					if (lineItr.hasNext()) lineItr.next().split(delimiter)[0].toInt()
 					else throw IOException("No se especifico el numero de clases")
 
-			//log.debug("{} {} {}", rowSize, attSize, classSize)
-			/*val attributes: List<String> = iterator.next().split(delimiter)
-			if (attributes.size != attSize)
-				throw IOException("No se especifico correctamente el numero de atributos")*/
-			// attributes = attributes.map { str -> Attribute.fromInt(str.toInt()) }
-
 			return DataSet(attSize, classSize)
 					.apply {
 						id = filename
