@@ -24,7 +24,7 @@ export class DashboardComponent implements OnInit {
   constructor(private dataSetService: DataSetService,
               private route: ActivatedRoute) {}
 
-  public analysisResult: AnalysisResult;
+  public analysisResult: AnalysisResult = new AnalysisResult();
   public attributes: number[];
   public plottedAttributes = { x: 0, y: 1, z: 2 };
 
