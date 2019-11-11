@@ -102,6 +102,11 @@ export class DashboardComponent implements OnInit {
           console.log('Se ha descargado el resultado del analisis');
           console.log(result);
           this.analysisResult = result;
+          this.analysisResult.treeEvaluation = this.analysisResult.treeEvaluation.replace(/\n/gi, '<br>');
+          this.analysisResult.bayesEvaluation = this.analysisResult.bayesEvaluation.replace(/\n/gi, '<br>');
+          this.analysisResult.suavizadoBayesEvaluation = this.analysisResult.suavizadoBayesEvaluation.replace(/\n/gi, '<br>');
+          this.analysisResult.suavizadoTreeEvaluation = this.analysisResult.suavizadoTreeEvaluation.replace(/\n/gi, '<br>');
+
           this.asignarAtributos(result.original.attributeSize);
           this.dibujarGrafica()
         },
