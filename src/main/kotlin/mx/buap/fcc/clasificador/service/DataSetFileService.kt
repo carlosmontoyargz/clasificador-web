@@ -47,6 +47,7 @@ class DataSetFileService
 
 			return DataSet(attSize, classSize)
 					.apply {
+						id = filename
 						for (i in 1..rowSize) {
 							if (!lineItr.hasNext())
 								throw IOException("No se especifico correctamente el numero de renglones")

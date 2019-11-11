@@ -8,6 +8,7 @@ import mx.buap.fcc.clasificador.model.DataSet
 import mx.buap.fcc.clasificador.model.NormalizationMethod
 import mx.buap.fcc.clasificador.model.NormalizationMethod.*
 import mx.buap.fcc.clasificador.service.DataSetFileService
+import mx.buap.fcc.clasificador.service.DataSetWekaService
 import org.modelmapper.ModelMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -23,6 +24,7 @@ import java.util.stream.Collectors
 class DataSetController
 	@Autowired constructor(
 			val dataSetFileService: DataSetFileService,
+			val dataSetWekaService: DataSetWekaService,
 			val modelMapper: ModelMapper)
 {
 	/**
@@ -46,7 +48,8 @@ class DataSetController
 	 */
 	@GetMapping("/{id}/performAnalysis")
 	fun performAnalysis(@PathVariable id: String,
-						@RequestParam normalizacion: NormalizationMethod?)
+						@RequestParam normalizacion: NormalizationMethod?,
+						@RequestParam(required = false, defaultValue = "7") folds: Int)
 			: ResponseEntity<ClassificationResult>
 	{
 		// Obtiene el dataset por id y lo normaliza mediante el algoritmo especificado
@@ -58,11 +61,18 @@ class DataSetController
 						DECIMAL_SCALING -> decimalScaling()
 					}
 				}
+		val softDs = ds.clonar().apply { wilsonEditig(7) }
+
 		// Retorna el resultado de la clasificacion y suavizado
-		return ResponseEntity.ok(ClassificationResult().apply {
-			original = dataSetToClassesDTO(ds)
-			suavizado = dataSetToClassesDTO(ds.apply { wilsonEditig(7) })
-		})
+		return ResponseEntity
+				.ok(ClassificationResult().apply {
+					original = dataSetToClassesDTO(ds)
+					suavizado = dataSetToClassesDTO(softDs)
+					bayesEvaluation = dataSetWekaService.evaluateBayes(ds, folds)
+					treeEvaluation = dataSetWekaService.evaluateTree(ds, folds)
+					suavizadoBayesEvaluation = dataSetWekaService.evaluateBayes(softDs, folds)
+					suavizadoTreeEvaluation = dataSetWekaService.evaluateTree(softDs, folds)
+				})
 	}
 
 	/**

@@ -1,7 +1,9 @@
 package mx.buap.fcc.clasificador.model
 
+import mx.buap.fcc.clasificador.service.DataSetFileService
 import mx.buap.fcc.clasificador.tools.MathTools
 import org.apache.logging.log4j.LogManager
+import java.io.IOException
 import java.math.BigDecimal
 import java.math.BigDecimal.*
 import java.math.RoundingMode
@@ -10,11 +12,13 @@ import java.util.stream.Stream
 import kotlin.collections.ArrayList
 
 /**
+ * Clase que modela un conjunto de instancias asi como sus tipos de atributos.
+ *
  * @author Carlos Montoya
  * @since 13/03/2019
  */
 open class DataSet
-	constructor(val id: String = UUID.randomUUID().toString(),
+	constructor(var id: String = UUID.randomUUID().toString(),
 				val attributes: List<Attribute>,
 				val classSize: Int)
 	: Iterable<Instance>
@@ -30,18 +34,6 @@ open class DataSet
 				 classSize = classSize)
 
 	/**
-	 * La lista mutable privada de instancias de este DataSet
-	 */
-	private val mtInstances: MutableList<Instance> = mutableListOf()
-
-	/**
-	 * La lista inmutable publica de instancias de este DataSet
-	 */
-	val instances get() = mtInstances.toList()
-
-	override fun iterator(): Iterator<Instance> = instances.iterator()
-
-	/**
 	 * El numero de instancias de este DataSet
 	 */
 	val instanceSize: Int get() = mtInstances.size
@@ -52,6 +44,28 @@ open class DataSet
 	val attributeSize: Int = attributes.size
 
 	/**
+	 * La lista mutable privada de instancias de este DataSet
+	 */
+	private val mtInstances: MutableList<Instance> = mutableListOf()
+
+	/**
+	 * La lista inmutable publica de instancias de este DataSet
+	 */
+	val instances get() = mtInstances.toList()
+
+	/**
+	 * La lista de clases del dataset
+	 */
+	val classes = ArrayList<String>().apply {
+		for (i in 0 until classSize) add(i.toString())
+	}
+
+	/**
+	 * El iterador de la clase
+	 */
+	override fun iterator(): Iterator<Instance> = instances.iterator()
+
+	/**
 	 * Obtiene el i-esimo renglon de este DataSet. Es un operador pues de esta
 	 * forma es posible invocar la funcion como notacion de arrays (dataSet[i]).
 	 *
@@ -59,6 +73,31 @@ open class DataSet
 	 * @return el i-esimo renglon de este DataSet
 	 */
 	operator fun get(i: Int): Instance = mtInstances[i]
+
+	/**
+	 * Retorna un Stream con los valores del atributo especificado.
+	 *
+	 * @param a posicion del atributo
+	 * @return un Stream con los valores de un atributo especifico.
+	 */
+	private fun getAttributeStream(a: Int): Stream<BigDecimal> =
+			mtInstances.stream().map { row -> row[a] }
+
+	/**
+	 * Retorna true si la columna especificada es atributo de tipo numerico.
+	 *
+	 * @param a El numero de columna
+	 * @return Si el tipo de atributo es numerico.
+	 */
+	fun isNumerical(a: Int): Boolean = AttributeType.NUMERICAL == attributes[a].type
+
+	/**
+	 * Retorna true si la columna especificada es atributo de tipo nominal.
+	 *
+	 * @param a El numero de columna
+	 * @return Si el tipo de atributo es nominal.
+	 */
+	fun isNominal(a: Int): Boolean = AttributeType.NOMINAL == attributes[a].type
 
 	/**
 	 * Agrega un Row a este DataSet, si el numero de columnas de ese Row
@@ -326,30 +365,6 @@ open class DataSet
 	private var absMaxCache: Array<BigDecimal>? = null
 
 	/**
-	 * Retorna un Stream con los valores del atributo especificado.
-	 *
-	 * @param a posicion del atributo
-	 * @return un Stream con los valores de un atributo especifico.
-	 */
-	fun getAttributeStream(a: Int): Stream<BigDecimal> = mtInstances.stream().map { row -> row[a] }
-
-	/**
-	 * Retorna true si la columna especificada es atributo de tipo numerico.
-	 *
-	 * @param a El numero de columna
-	 * @return Si el tipo de atributo es numerico.
-	 */
-	fun isNumerical(a: Int): Boolean = AttributeType.NUMERICAL == attributes[a].type
-
-	/**
-	 * Retorna true si la columna especificada es atributo de tipo nominal.
-	 *
-	 * @param a El numero de columna
-	 * @return Si el tipo de atributo es nominal.
-	 */
-	fun isNominal(a: Int): Boolean = AttributeType.NOMINAL == attributes[a].type
-
-	/**
 	 * Representa este DataSet en un String
 	 * @return la representacion textual de este DataSet
 	 */
@@ -366,6 +381,13 @@ open class DataSet
 							.toString() +
 			"	}\n" +
 			"}"
+
+	fun clonar(): DataSet {
+		val ds = DataSet(this.attributeSize, this.classSize)
+		for (instance in instances) ds.add(instance)
+		ds.id = this.id
+		return ds;
+	}
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true

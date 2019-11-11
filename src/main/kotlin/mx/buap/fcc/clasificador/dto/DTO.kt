@@ -35,4 +35,8 @@ open class ClassDTO {
 open class ClassificationResult {
 	var original: ClassesDTO? = null
 	var suavizado: ClassesDTO? = null
+	var bayesEvaluation: String? = null
+	var treeEvaluation: String? = null
+	var suavizadoBayesEvaluation: String? = null
+	var suavizadoTreeEvaluation: String? = null
 }
