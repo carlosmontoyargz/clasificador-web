@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import * as Highcharts from 'highcharts';
 import highcharts3D from 'highcharts/highcharts-3d.src';
@@ -20,6 +21,8 @@ noData(Highcharts);
   templateUrl: 'dashboard.component.html'
 })
 export class DashboardComponent implements OnInit {
+  constructor(private dataSetService: DataSetService,
+              private route: ActivatedRoute) {}
 
   public analysisResult: AnalysisResult;
   public attributes: number[];
@@ -92,11 +95,9 @@ export class DashboardComponent implements OnInit {
     },
   };
 
-  constructor(private dataSetService: DataSetService) {}
-
-  ngOnInit(): void {
+  ngOnInit(): void { // 'seg-data.txt'
     this.dataSetService
-      .performAnalysis('seg-data.txt')
+      .performAnalysis(this.route.snapshot.params.datasetName)
       .subscribe(
         result => {
           console.log('Se ha descargado el resultado del analisis');
