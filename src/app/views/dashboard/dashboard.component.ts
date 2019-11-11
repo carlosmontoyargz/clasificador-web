@@ -161,8 +161,6 @@ export class DashboardComponent implements OnInit {
    * Configura las Highcharts y los eventos de movimiento y las renderiza en la vista.
    */
   private drawHighcharts() {
-    console.log("Opciones de grafica original");
-    console.log(this.originalCharOptions);
     let originalChart = Highcharts.chart('container', this.originalCharOptions);
     let dragStart = eStart => {
       eStart = originalChart.pointer.normalize(eStart);
@@ -197,8 +195,6 @@ export class DashboardComponent implements OnInit {
     Highcharts.addEvent(originalChart.container, 'mousedown', dragStart);
     Highcharts.addEvent(originalChart.container, 'touchstart', dragStart);
 
-    console.log("Opciones de grafica suavizada");
-    console.log(this.suavizadaChartOptions);
     let softChart = Highcharts.chart('container2', this.suavizadaChartOptions);
     let dragStart2 = eStart => {
       eStart = softChart.pointer.normalize(eStart);
