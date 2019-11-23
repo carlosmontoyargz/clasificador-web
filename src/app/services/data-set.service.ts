@@ -7,13 +7,15 @@ import {environment} from "../../environments/environment";
 export class DataSetService {
   constructor(private httpClient: HttpClient) {}
 
-  performAnalysis(id: string, norm: string) {
+  performAnalysis(id: string, norm: string, k: number, folds: number) {
     return this.httpClient
       .get<AnalysisResult>(
         `${environment.apiUrl}/dataset/${id}/performAnalysis`,
         {
           params: {
-            'normalizacion': norm
+            'normalizacion': norm,
+            'k': k.toString(),
+            'folds': folds.toString()
           }
         })
   }

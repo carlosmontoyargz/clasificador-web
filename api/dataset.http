@@ -1,5 +1,5 @@
 
-GET http://localhost:8080/dataset/seg-data.txt/performAnalysis?normalizacion=Z_SCORE&k=7&folds=5&
+GET http://localhost:8080/dataset/seg-data.txt/performAnalysis?normalizacion=Z_SCORE&k=1&folds=5&
 
 ###
 

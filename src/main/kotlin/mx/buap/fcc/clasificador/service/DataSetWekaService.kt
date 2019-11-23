@@ -10,7 +10,6 @@ import weka.classifiers.trees.J48
 import weka.core.Attribute
 import weka.core.DenseInstance
 import weka.core.Instances
-import java.util.*
 import kotlin.collections.ArrayList
 
 @Service
@@ -18,55 +17,50 @@ class DataSetWekaService
 {
 	private val log = LogManager.getLogger()
 
-	fun evaluateBayes(ds: DataSet, numFolds: Int): String {
-		val instances: Instances = getWekaInstancesFromDataSet(ds)
-		val naiveBayesClassifier = NaiveBayes()
-		naiveBayesClassifier.buildClassifier(instances)
-		return evaluate(naiveBayesClassifier, instances, numFolds)
+	fun evaluateBayes(trainingSet: DataSet, testSet: DataSet): String {
+		val wekaTrSet: Instances = getWekaInstancesFromDataSet(trainingSet)
+		val naiveBayes = NaiveBayes().apply { buildClassifier(wekaTrSet) }
+		return evaluate(naiveBayes, wekaTrSet, getWekaInstancesFromDataSet(testSet))
 	}
 
-	fun evaluateTree(ds: DataSet, numFolds: Int): String {
-		val instances: Instances = getWekaInstancesFromDataSet(ds)
-		val tree = J48()
-		tree.options = arrayOf("-U")
-		tree.buildClassifier(instances)
-		return evaluate(tree, instances, numFolds)
+	fun evaluateTree(trainingSet: DataSet, testSet: DataSet): String {
+		val wekaTrSet: Instances = getWekaInstancesFromDataSet(trainingSet)
+		val tree = J48().apply {
+			options = arrayOf("-U");
+			buildClassifier(wekaTrSet)
+		}
+		return evaluate(tree, wekaTrSet, getWekaInstancesFromDataSet(testSet))
 	}
 
-	private fun evaluate(classifier: Classifier, instances: Instances, numFolds: Int): String
+	private fun evaluate(classifier: Classifier, trainingSet: Instances, testSet: Instances): String
 	{
-		val evaluation = Evaluation(instances)
-		evaluation.crossValidateModel(classifier, instances, numFolds, Random(1))
-		val evalStr = "$classifier \n ${evaluation.toSummaryString()}"
-		log.info(evalStr)
-		return evalStr
+		val evaluation = Evaluation(trainingSet)
+		evaluation.evaluateModel(classifier, testSet)
+		return "$classifier \n ${evaluation.toSummaryString()}"
 	}
 
 	fun getWekaInstancesFromDataSet(ds: DataSet): Instances {
-		val classAtribute = Attribute(
-				"CLASS",
-				ArrayList<String>(ds.classSize).apply { addAll(ds.classes) })
+		val classAtribute = Attribute("CLASS", ds.classes)
 		val instances = Instances(
 				ds.id,
 				ArrayList<Attribute>(ds.attributeSize + 1)
 						.apply {
 							ds.attributes.indices.forEach { i ->
-								add(Attribute(i.toString())) }
+								add(Attribute(i.toString()))
+							}
 							add(classAtribute)
 						},
-				ds.instanceSize)
-				.apply { setClass(classAtribute) }
-		ds.forEach { inst ->
-			instances.add(
-					DenseInstance(ds.attributeSize + 1)
-							.apply {
-								setDataset(instances)
-								inst.data.forEachIndexed {
-									i, value -> setValue(i, value.toDouble())
-								}
-		//						setValue(ds.attributeSize, inst.clazz.toDouble())
-								setClassValue(inst.clazz.toString())
-							})
+				ds.instanceSize).apply { setClass(classAtribute) }
+
+		ds.forEach { inst -> instances.add(
+				DenseInstance(ds.attributeSize + 1)
+						.apply {
+							setDataset(instances)
+							inst.data.forEachIndexed {
+								i, value -> setValue(i, value.toDouble())
+							}
+							setClassValue(inst.clazz.toString())
+						})
 		}
 		log.debug(instances)
 		return instances

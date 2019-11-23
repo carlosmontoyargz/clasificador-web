@@ -97,7 +97,7 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void { // 'seg-data.txt'
     this.dataSetService
-      .performAnalysis(this.route.snapshot.params.datasetName, "Z_SCORE")
+      .performAnalysis(this.route.snapshot.params.datasetName, "Z_SCORE", 3, 2)
       .subscribe(
         result => {
           console.log('Se ha descargado el resultado del analisis');

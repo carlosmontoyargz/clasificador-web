@@ -1,9 +1,7 @@
 package mx.buap.fcc.clasificador.model
 
-import mx.buap.fcc.clasificador.service.DataSetFileService
 import mx.buap.fcc.clasificador.tools.MathTools
 import org.apache.logging.log4j.LogManager
-import java.io.IOException
 import java.math.BigDecimal
 import java.math.BigDecimal.*
 import java.math.RoundingMode
@@ -164,10 +162,12 @@ open class DataSet
 	 * @param k el numero de vecinos cercanos.
 	 */
 	fun wilsonEditig(k: Int) {
+		log.debug("Comienza proceso de suavizado de fronteras")
+		var totalIt = 0
 		var done = false
 		while (!done) {
+			totalIt++
 			done = true
-			log.debug("Comienza proceso de suavizado de fronteras")
 			val itrt = mtInstances.iterator()
 			while (itrt.hasNext()) {
 				val instance = itrt.next()
@@ -177,7 +177,7 @@ open class DataSet
 				}
 			}
 		}
-		log.debug("Termina el proceso de suavizado de fronteras")
+		log.debug("Termina el proceso de suavizado de fronteras despues de {} iteraciones", totalIt)
 	}
 
 	/**
@@ -365,6 +365,31 @@ open class DataSet
 	private var absMaxCache: Array<BigDecimal>? = null
 
 	/**
+	 * Obtiene un DataSet nuevo, el cual es una particion aleatoria de este DataSet.
+	 * Los elementos del conjunto retornado son eliminados de este DataSet.
+	 *
+	 * @param porcentaje de las instancias que se incluiran en la particion.
+	 */
+	fun particionar(porcentaje: Double = 0.2): DataSet {
+		val n = (instanceSize * porcentaje).toInt()
+		val partition = DataSet(this.attributeSize, this.classSize)
+		while (partition.instanceSize < n) {
+			val rnd = mtInstances.random()
+			if (!partition.contains(rnd)) {
+				partition.add(rnd); mtInstances.remove(rnd)
+			}
+		}
+		log.info("Termina particion del DataSet, nuevo tamano: {}", instanceSize)
+		return partition
+	}
+
+	fun clonar(): DataSet {
+		val ds = DataSet(attributeSize, classSize)
+		instances.forEach { ds.add(it) }
+		return ds
+	}
+
+	/**
 	 * Representa este DataSet en un String
 	 * @return la representacion textual de este DataSet
 	 */
@@ -381,13 +406,6 @@ open class DataSet
 							.toString() +
 			"	}\n" +
 			"}"
-
-	fun clonar(): DataSet {
-		val ds = DataSet(this.attributeSize, this.classSize)
-		for (instance in instances) ds.add(instance)
-		ds.id = this.id
-		return ds;
-	}
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
