@@ -45,7 +45,7 @@
     "core-js": "^2.6.10",
     "flag-icon-css": "^3.4.5",
     "font-awesome": "^4.7.0",
-    "highcharts": "^7.2.1",
+    "highcharts": "^7.2.2",
     "moment": "^2.24.0",
     "mutationobserver-shim": "^0.3.3",
     "ng2-charts": "^2.3.0",
